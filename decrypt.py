@@ -1,7 +1,7 @@
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20
 from cryptography.hazmat.backends import default_backend
-from hashVerifier import verify_hash
+from hashVerifier import verifyHash
 
 ALGORITHMS = {
     'AES-128': {'key_size': 16, 'algorithm': AES},
@@ -9,7 +9,7 @@ ALGORITHMS = {
     'ChaCha20': {'key_size': 32, 'algorithm': ChaCha20}
 }
 
-def decrypt_file(input_file, output_file, key, algorithm_name):
+def decryptFile(input_file, output_file, key, algorithm_name):
     with open(input_file, 'rb') as f:
         data = f.read()
         if algorithm_name.startswith("AES"):
@@ -34,7 +34,7 @@ def decrypt_file(input_file, output_file, key, algorithm_name):
     decrypted_data = decrypted_padded[:-padding_length]
 
     # Verificar integridade
-    if verify_hash(decrypted_data, hash_value_stored):
+    if verifyHash(decrypted_data, hash_value_stored):
         print("Integrity check passed. Data is intact.")
     else:
         print("Integrity check failed. Data may be corrupted!")

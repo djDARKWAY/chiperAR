@@ -11,12 +11,12 @@ ALGORITHMS = {
 }
 
 # Gera uma chave com base no algoritmo de criptografia
-def generate_key(algorithm_name):
+def generateKey(algorithm_name):
     key_size = ALGORITHMS[algorithm_name]['key_size']
     return os.urandom(key_size)
 
 # Cifra um ficheiro usando o algoritmo selecionado
-def encrypt_file(input_file, output_file, key, algorithm_name):
+def encryptFile(input_file, output_file, key, algorithm_name):
     with open(input_file, 'rb') as f:
         data = f.read()
 
@@ -35,7 +35,7 @@ def encrypt_file(input_file, output_file, key, algorithm_name):
     ciphertext = encryptor.update(padded_data) + encryptor.finalize()
 
     # Gerar o hash do conteúdo original
-    hash_object = hashlib.sha256(data)
+    hash_object = hashlib.sha512(data)
     hash_value = hash_object.hexdigest()
 
     # Guardar IV/nonce + ficheiro cifrado + hash

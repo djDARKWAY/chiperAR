@@ -3,6 +3,7 @@ import encrypt
 import decrypt  
 from datetime import datetime
 import qrcode
+from PIL import Image
 import shutil
 
 def chooseAlgorithm():
@@ -59,7 +60,7 @@ def main():
             print("------------------\nEncryption key type:\n1. Generated key\n2. Custom key")
             key_choice = input("► ")
             if key_choice == '1':
-                key = encrypt.generate_key(cipher_algorithm)
+                key = encrypt.generateKey(cipher_algorithm)
             elif key_choice == '2':
                 while True:
                     key_length = 16 if cipher_algorithm == 'AES-128' else 32
@@ -69,10 +70,10 @@ def main():
                     print(f"Invalid key length for {cipher_algorithm}. Must be {key_length} bytes.")
             else:
                 print("Invalid choice, generating key automatically...")
-                key = encrypt.generate_key(cipher_algorithm)
+                key = encrypt.generateKey(cipher_algorithm)
 
             try:
-                encrypt.encrypt_file(input_file, output_file, key, cipher_algorithm)
+                encrypt.encryptFile(input_file, output_file, key, cipher_algorithm)
                 print(f"File '{input_file}' encrypted to '{output_file}' using {cipher_algorithm}.")
 
                 # Criar um diretório com um timestamp
@@ -108,7 +109,7 @@ def main():
                     print(f"Invalid key length. Must be {key_length} bytes for {cipher_algorithm}.")
                     continue
 
-                decrypt.decrypt_file(input_file, output_file, key, cipher_algorithm)
+                decrypt.decryptFile(input_file, output_file, key, cipher_algorithm)
                 print(f"File '{input_file}' decrypted to '{output_file}' using {cipher_algorithm}.")
             except ValueError:
                 print("Invalid key! Please enter a valid key.")
