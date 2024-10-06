@@ -2,9 +2,12 @@ import os
 import encrypt  
 import decrypt  
 from datetime import datetime
+import shutil
+import subprocess
+import sys
+import cryptography
 import qrcode
 from PIL import Image
-import shutil
 
 def chooseAlgorithm():
     print("Algorithm:\n1. AES-128\n2. AES-256\n3. ChaCha20")
@@ -32,6 +35,15 @@ def saveFile(output_file, input_file, cipher_algorithm, key, output_dir):
     shutil.move(output_file, os.path.join(output_dir, output_file))
     print(f"Encrypted file moved to '{output_dir}/{output_file}'.")
     print(f"QR Code saved as '{qr_file}'.")
+
+def installRequirements():
+    required_packages = ['cryptography', 'qrcode', 'Pillow']
+    for package in required_packages:
+        try:
+            __import__(package)  # Tenta importar o pacote
+        except ImportError:
+            print(f"'{package}' is not instaled. Installing...")
+            subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
 def main():
     while True:
@@ -74,9 +86,7 @@ def main():
 
             try:
                 encrypt.encryptFile(input_file, output_file, key, cipher_algorithm)
-                print(f"File '{input_file}' encrypted to '{output_file}' using {cipher_algorithm}.")
 
-                # Criar um diretório com um timestamp
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
                 output_dir = f"encrypted_files_{timestamp}"
                 os.makedirs(output_dir, exist_ok=True)
@@ -122,4 +132,5 @@ def main():
             print("Please select a valid option!")
 
 if __name__ == "__main__":
+    installRequirements()
     main()

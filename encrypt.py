@@ -44,4 +44,4 @@ def encryptFile(input_file, output_file, key, algorithm_name):
         f.write(ciphertext)  # Dados cifrados
         f.write(hash_value.encode())  # Hash no final
 
-    print(f"File '{input_file}' encrypted to '{output_file}' with {algorithm_name} and hash '{hash_value}'")
+    print(f"Original File: '{input_file}'\nEncrypted File: '{output_file}'\nAlgorithm: {algorithm_name}\n Hash: '{hash_value}'")
