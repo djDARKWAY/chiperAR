@@ -136,6 +136,7 @@ def main():
             except Exception as e:
                 print(f"An error occurred during decryption: {e}")
 
+        # Exit
         elif option == '0':
             break
         else:
