@@ -2,25 +2,28 @@ import os
 import subprocess
 import sys
 
-def install(package):
+def installPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 
-def verify_and_install(package):
+def verifyAndInstall(package):
     try:
-        __import__(package)
+        if package == 'Pillow':
+            __import__('PIL')
+        else:
+            __import__(package)
     except ImportError:
         print(f"{package} não encontrado, instalando...")
-        install(package)
+        installPackage(package)
 
 if os.path.exists("requirements.txt"):
     with open("requirements.txt", 'r') as f:
-        required_packages = [line.strip() for line in f if line.strip()]
+        requiredPackages = [line.strip() for line in f if line.strip()]
 else:
-    print(f"File '{"requirements.txt"}' was not found! Instaling manually...")
-    required_packages = ['cryptography', 'qrcode', 'Pillow']
+    print(f"File 'requirements.txt' was not found! Installing manually...")
+    requiredPackages = ['cryptography', 'qrcode', 'Pillow']
     
-for package in required_packages:
-    verify_and_install(package)
+for package in requiredPackages:
+    verifyAndInstall(package)
 
 import encrypt  
 import decrypt  
@@ -30,34 +33,34 @@ import qrcode
 
 def chooseAlgorithm():
     print("Algorithm:\n1. AES-128\n2. AES-256\n3. ChaCha20")
-    cipher_choice = input("► ")
-    return 'AES-128' if cipher_choice == '1' else 'AES-256' if cipher_choice == '2' else 'ChaCha20'
+    cipherChoice = input("► ")
+    return 'AES-128' if cipherChoice == '1' else 'AES-256' if cipherChoice == '2' else 'ChaCha20'
 
-def generateQRC(key, output_dir):
+def generateQRC(key, outputDir):
     qr = qrcode.make(key.hex())
-    qr_file = os.path.join(output_dir, 'QRC.png')
-    qr.save(qr_file)
-    return qr_file
+    qrFile = os.path.join(outputDir, 'QRC.png')
+    qr.save(qrFile)
+    return qrFile
 
-def saveFile(output_file, input_file, cipher_algorithm, key, output_dir):
-    info_file = os.path.join(output_dir, f"{os.path.splitext(output_file)[0]}_info.txt")
-    with open(info_file, 'w') as f:
-        f.write(f"Original File: {input_file}\n")
-        f.write(f"Encrypted File: {output_file}\n")
+def saveFile(outputFile, inputFile, cipherAlgorithm, key, outputDir):
+    infoFile = os.path.join(outputDir, f"{os.path.splitext(outputFile)[0]}_info.txt")
+    with open(infoFile, 'w') as f:
+        f.write(f"Original File: {inputFile}\n")
+        f.write(f"Encrypted File: {outputFile}\n")
         f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write(f"Algorithm: {cipher_algorithm}\n")
+        f.write(f"Algorithm: {cipherAlgorithm}\n")
         f.write(f"Key: {key.hex()}\n")
-    print(f"File info saved to '{info_file}'.")
+    print(f"File info saved to '{infoFile}'.")
 
-    qr_file = generateQRC(key, output_dir)
+    qrFile = generateQRC(key, outputDir)
 
-    shutil.move(output_file, os.path.join(output_dir, output_file))
-    print(f"Encrypted file moved to '{output_dir}/{output_file}'.")
-    print(f"QR Code saved as '{qr_file}'.")
+    shutil.move(outputFile, os.path.join(outputDir, outputFile))
+    print(f"Encrypted file moved to '{outputDir}/{outputFile}'.")
+    print(f"QR Code saved as '{qrFile}'.")
 
 def main():
     while True:
-        print("\n---------- ChiperAR ----------")
+        print("\n---------- cipherAR ----------")
         print("1. Encrypt with AES/ChaCha20\n2. Decrypt a file\n\n0. Exit")
         print("------------------------------")
 
@@ -66,77 +69,80 @@ def main():
         # Encrypt with AES-128, AES-256 and ChaCha20
         if option == '1':
             while True:
-                input_file = input("Enter the file name to encrypt:\n► ")
-                if not os.path.isfile(input_file):
+                inputFile = input("Enter the file name to encrypt:\n► ")
+                if not os.path.isfile(inputFile):
                     print("File not found!")
                     continue
                 break
 
-            file_extension = os.path.splitext(input_file)[1]
-            output_file = input(f"Output encrypted file name ({file_extension}):\n► ")
-            if not output_file.endswith(file_extension):
-                output_file += file_extension
+            fileExtension = os.path.splitext(inputFile)[1]
+            outputFile = input(f"Output encrypted file name ({fileExtension}):\n► ")
+            if not outputFile.endswith(fileExtension):
+                outputFile += fileExtension
 
-            cipher_algorithm = chooseAlgorithm()
+            cipherAlgorithm = chooseAlgorithm()
 
             print("------------------\nEncryption key type:\n1. Generated key\n2. Custom key")
-            key_choice = input("► ")
-            if key_choice == '1':
-                key = encrypt.generateKey(cipher_algorithm)
-            elif key_choice == '2':
+            keyChoice = input("► ")
+            if keyChoice == '1':
+                key = encrypt.generateKey(cipherAlgorithm)
+            elif keyChoice == '2':
                 while True:
-                    key_length = 16 if cipher_algorithm == 'AES-128' else 32
-                    key = input(f"Enter your key ({key_length} bytes for {cipher_algorithm}):\n► ").encode()
-                    if len(key) == key_length:
+                    keyLength = 16 if cipherAlgorithm == 'AES-128' else 32
+                    key = input(f"Enter your key ({keyLength} bytes for {cipherAlgorithm}):\n► ").encode()
+                    if len(key) == keyLength:
                         break
-                    print(f"Invalid key length for {cipher_algorithm}. Must be {key_length} bytes.")
+                    print(f"Invalid key length for {cipherAlgorithm}. Must be {keyLength} bytes.")
             else:
                 print("Invalid choice, generating key automatically...")
-                key = encrypt.generateKey(cipher_algorithm)
+                key = encrypt.generateKey(cipherAlgorithm)
 
             try:
-                encrypt.encryptFile(input_file, output_file, key, cipher_algorithm)
+                encrypt.encryptFile(inputFile, outputFile, key, cipherAlgorithm)
 
                 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                output_dir = f"encrypted_files_{timestamp}"
-                os.makedirs(output_dir, exist_ok=True)
+                outputDir = f"encrypted_files_{timestamp}"
+                os.makedirs(outputDir, exist_ok=True)
 
-                saveFile(output_file, input_file, cipher_algorithm, key, output_dir)
+                saveFile(outputFile, inputFile, cipherAlgorithm, key, outputDir)
 
             except Exception as e:
                 print(f"An error occurred during encryption: {e}")
 
-        # Decrypt a file
+        # Decrypt a file (detect algorythm)
         elif option == '2':
             while True:
-                input_file = input("Enter the file name to decrypt:\n► ")
-                if not os.path.isfile(input_file):
+                inputFile = input("Enter the file name to decrypt:\n► ")
+                if not os.path.isfile(inputFile):
                     print("File not found!")
                     continue
                 break
 
-            original_extension = os.path.splitext(input_file)[1]
-            output_file_name = input(f"Output decrypted file name ({original_extension}):\n► ")
-            output_file = f"{output_file_name}{original_extension}"
+            originalExtension = os.path.splitext(inputFile)[1]
+            outputFileName = input(f"Output decrypted file name ({originalExtension}):\n► ")
+            outputFile = f"{outputFileName}{originalExtension}"
 
-            cipher_algorithm = chooseAlgorithm()
-
-            hex_key = input("Enter your key:\n► ")
+            hexKey = input("Enter your key:\n► ")
             try:
-                key = bytes.fromhex(hex_key)
-                key_length = 16 if cipher_algorithm == 'AES-128' else 32
-                if len(key) != key_length:
-                    print(f"Invalid key length. Must be {key_length} bytes for {cipher_algorithm}.")
+                key = bytes.fromhex(hexKey)
+                
+                # Detecta o algoritmo automaticamente do arquivo
+                with open(inputFile, 'rb') as f:
+                    algorithmName = f.readline().decode().strip()  # Lê o nome do algoritmo do arquivo
+                
+                # Define o tamanho correto da chave com base no algoritmo detectado
+                keyLength = 16 if algorithmName == 'AES-128' else 32
+                if len(key) != keyLength:
+                    print(f"Invalid key length. Must be {keyLength} bytes for {algorithmName}.")
                     continue
 
-                decrypt.decryptFile(input_file, output_file, key, cipher_algorithm)
-                print(f"File '{input_file}' decrypted to '{output_file}' using {cipher_algorithm}.")
+                decrypt.decryptFile(inputFile, outputFile, key)
+                print(f"File '{inputFile}' decrypted to '{outputFile}' using the detected algorithm: {algorithmName}.")
             except ValueError:
                 print("Invalid key! Please enter a valid key.")
             except Exception as e:
                 print(f"An error occurred during decryption: {e}")
 
-        # Exit
         elif option == '0':
             break
         else:

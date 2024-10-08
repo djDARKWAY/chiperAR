@@ -5,43 +5,44 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20
 from cryptography.hazmat.backends import default_backend
 
 ALGORITHMS = {
-    'AES-128': {'key_size': 16, 'algorithm': AES},
-    'AES-256': {'key_size': 32, 'algorithm': AES},
-    'ChaCha20': {'key_size': 32, 'algorithm': ChaCha20}
+    'AES-128': {'keySize': 16, 'algorithm': AES},
+    'AES-256': {'keySize': 32, 'algorithm': AES},
+    'ChaCha20': {'keySize': 32, 'algorithm': ChaCha20}
 }
 
 # Gera uma chave com base no algoritmo de criptografia
-def generateKey(algorithm_name):
-    key_size = ALGORITHMS[algorithm_name]['key_size']
-    return os.urandom(key_size)
+def generateKey(algorithmName):
+    keySize = ALGORITHMS[algorithmName]['keySize']
+    return os.urandom(keySize)
 
 # Cifra um ficheiro usando o algoritmo selecionado
-def encryptFile(input_file, output_file, key, algorithm_name):
-    with open(input_file, 'rb') as f:
+def encryptFile(inputFile, outputFile, key, algorithmName):
+    with open(inputFile, 'rb') as f:
         data = f.read()
 
-    if algorithm_name.startswith("AES"):
+    if algorithmName.startswith("AES"):
         iv = os.urandom(16)
-        cipher = Cipher(ALGORITHMS[algorithm_name]['algorithm'](key), modes.CBC(iv), backend=default_backend())
+        cipher = Cipher(ALGORITHMS[algorithmName]['algorithm'](key), modes.CBC(iv), backend=default_backend())
         encryptor = cipher.encryptor()
-    elif algorithm_name == 'ChaCha20':
+    elif algorithmName == 'ChaCha20':
         nonce = os.urandom(16)
-        cipher = Cipher(ALGORITHMS[algorithm_name]['algorithm'](key, nonce), mode=None, backend=default_backend())
+        cipher = Cipher(ALGORITHMS[algorithmName]['algorithm'](key, nonce), mode=None, backend=default_backend())
         encryptor = cipher.encryptor()
 
-    padding_length = 16 - (len(data) % 16)
-    padded_data = data + bytes([padding_length] * padding_length)
+    paddingLength = 16 - (len(data) % 16)
+    paddedData = data + bytes([paddingLength] * paddingLength)
 
-    ciphertext = encryptor.update(padded_data) + encryptor.finalize()
+    ciphertext = encryptor.update(paddedData) + encryptor.finalize()
 
     # Gerar o hash do conteúdo original
-    hash_object = hashlib.sha512(data)
-    hash_value = hash_object.hexdigest()
+    hashObject = hashlib.sha512(data)
+    hashValue = hashObject.hexdigest()
 
-    # Guardar IV/nonce + ficheiro cifrado + hash
-    with open(output_file, 'wb') as f:
-        f.write(iv if algorithm_name.startswith("AES") else nonce)  # IV ou nonce no início
+    # Guardar algoritmo + IV/nonce + ficheiro cifrado + hash
+    with open(outputFile, 'wb') as f:
+        f.write(algorithmName.encode() + b'\n')  # Adiciona o algoritmo no início
+        f.write(iv if algorithmName.startswith("AES") else nonce)  # IV ou nonce no início
         f.write(ciphertext)  # Dados cifrados
-        f.write(hash_value.encode())  # Hash no final
+        f.write(hashValue.encode())  # Hash no final
 
-    print(f"Original File: '{input_file}'\nEncrypted File: '{output_file}'\nAlgorithm: {algorithm_name}\n Hash: '{hash_value}'")
+    print(f"Original File: '{inputFile}'\nEncrypted File: '{outputFile}'\nAlgorithm: {algorithmName}\nHash: '{hashValue}'")

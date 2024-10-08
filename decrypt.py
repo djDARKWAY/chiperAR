@@ -4,43 +4,44 @@ from cryptography.hazmat.backends import default_backend
 from hashVerifier import verifyHash
 
 ALGORITHMS = {
-    'AES-128': {'key_size': 16, 'algorithm': AES},
-    'AES-256': {'key_size': 32, 'algorithm': AES},
-    'ChaCha20': {'key_size': 32, 'algorithm': ChaCha20}
+    'AES-128': {'keySize': 16, 'algorithm': AES},
+    'AES-256': {'keySize': 32, 'algorithm': AES},
+    'ChaCha20': {'keySize': 32, 'algorithm': ChaCha20}
 }
 
-def decryptFile(input_file, output_file, key, algorithm_name):
-    with open(input_file, 'rb') as f:
+def decryptFile(inputFile, outputFile, key):
+    with open(inputFile, 'rb') as f:
+        # Lê o algoritmo
+        algorithmName = f.readline().decode().strip()
+
         data = f.read()
-        if algorithm_name.startswith("AES"):
+        if algorithmName.startswith("AES"):
             iv = data[:16]
-            ciphertext = data[16:-64]
-        elif algorithm_name == 'ChaCha20':
+            ciphertext = data[16:-128]
+        elif algorithmName == 'ChaCha20':
             nonce = data[:16]
-            ciphertext = data[16:-64]
+            ciphertext = data[16:-128]
 
-        hash_value_stored = data[-64:].decode()
+        hashValueStored = data[-128:].decode()
 
-    if algorithm_name.startswith("AES"):
-        cipher = Cipher(ALGORITHMS[algorithm_name]['algorithm'](key), modes.CBC(iv), backend=default_backend())
-    elif algorithm_name == 'ChaCha20':
-        cipher = Cipher(ALGORITHMS[algorithm_name]['algorithm'](key, nonce), mode=None, backend=default_backend())
+    if algorithmName.startswith("AES"):
+        cipher = Cipher(ALGORITHMS[algorithmName]['algorithm'](key), modes.CBC(iv), backend=default_backend())
+    elif algorithmName == 'ChaCha20':
+        cipher = Cipher(ALGORITHMS[algorithmName]['algorithm'](key, nonce), mode=None, backend=default_backend())
     
     decryptor = cipher.decryptor()
-    decrypted_padded = decryptor.update(ciphertext) + decryptor.finalize()
+    decryptedPadded = decryptor.update(ciphertext) + decryptor.finalize()
 
     # Remover padding
-    padding_length = decrypted_padded[-1]
-    decrypted_data = decrypted_padded[:-padding_length]
+    paddingLength = decryptedPadded[-1]
+    decryptedData = decryptedPadded[:-paddingLength]
 
     # Verificar integridade
-    if verifyHash(decrypted_data, hash_value_stored):
+    if verifyHash(decryptedData, hashValueStored):
         print("Integrity check passed. Data is intact.")
     else:
         print("Integrity check failed. Data may be corrupted!")
 
     # Escrever o ficheiro descriptografado
-    with open(output_file, 'wb') as f:
-        f.write(decrypted_data)
-
-    print(f"File '{input_file}' decrypted to '{output_file}'")
+    with open(outputFile, 'wb') as f:
+        f.write(decryptedData)
