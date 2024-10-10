@@ -51,10 +51,8 @@ def encryptFile(inputFile, outputFile, key, algorithmName):
     # Guardar algoritmo + IV/nonce + ficheiro cifrado + hash
     with open(outputFile, 'wb') as f:
         f.write(algorithmName.encode() + b'\n')
-        if algorithmName.startswith("AES") or algorithmName == 'TripleDES':
-            f.write(iv)
-        elif algorithmName == 'ChaCha20':
-            f.write(nonce)
+        if algorithmName.startswith("AES") or algorithmName == 'TripleDES': f.write(iv)
+        elif algorithmName == 'ChaCha20': f.write(nonce)
         f.write(ciphertext)
         f.write(hashValue.encode())
 
