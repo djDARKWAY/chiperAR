@@ -60,31 +60,3 @@ def decryptFile(inputFile, outputFile, key):
     # Escrever o ficheiro descriptografado
     with open(outputFile, 'wb') as f:
         f.write(decryptedData)
-
-# Decifrar com RSA e usar para descriptografar o arquivo
-def rsaDecryptFile(inputFile, outputFile, privateKeyFile):
-    # Carregar a chave privada RSA
-    with open(privateKeyFile, 'rb') as f:
-        private_key = serialization.load_pem_private_key(f.read(), password=None, backend=default_backend())
-
-    # Ler o arquivo cifrado com RSA
-    with open(inputFile, 'rb') as f:
-        encryptedKey = f.read()
-
-    # Decifrar a chave simétrica com RSA
-    symmetricKey = private_key.decrypt(
-    encryptedKey,
-    padding.OAEP(
-        mgf=padding.MGF1(algorithm=hashes.SHA256()),
-        algorithm=hashes.SHA256(),
-        label=None
-    )
-)
-
-    # Agora use a chave simétrica para decifrar o arquivo (simplesmente chamando o método de descriptografia, conforme já está implementado)
-    with open(inputFile, 'rb') as f:
-        algorithmName = f.readline().decode().strip()
-        cipherData = f.read()
-
-    # Use o mesmo método de descriptografia com a chave simétrica decifrada
-    decryptFile(inputFile, outputFile, symmetricKey, algorithmName)
