@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives import serialization
@@ -10,33 +9,31 @@ def saveKeyToFile(filePath, keyData):
     print(f"Key saved to {filePath}")
 
 def generateRsaKeys():
-    # Gera um par de chaves RSA (2048 bits)
     keyPair = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048,
         backend=default_backend()
     )
 
-    myKeysDir = Path("assets/keys/myKeys")
-    myKeysDir.mkdir(parents=True, exist_ok=True)
+    keysDir = Path("assets/keys/myKeys")
+    keysDir.mkdir(parents=True, exist_ok=True)
 
-    privateKeyFile = myKeysDir / "private_key.pem"
     privateKey = keyPair.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.TraditionalOpenSSL,
         encryption_algorithm=serialization.NoEncryption()
     )
-    publicKeyFile = myKeysDir / "public_key.pem"
     publicKey = keyPair.public_key().public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
 
-    saveKeyToFile(privateKeyFile, privateKey)
-    saveKeyToFile(publicKeyFile, publicKey)
+<<<<<<< HEAD
+    saveKeyToFile(keysDir / "privateKey.pem", privateKey)
+    saveKeyToFile(keysDir / "publicKey.pem", publicKey)
+=======
+    saveKeyToFile(keysDir / "private_key.pem", privateKey)
+    saveKeyToFile(keysDir / "public_key.pem", publicKey)
+>>>>>>> c3591dc118303abcefb04001df72d7bf1d4833e6
 
-    print(f"Keys generated and saved to {myKeysDir}")
-
-# Verifica se o script está sendo executado diretamente
-if __name__ == "__main__":
-    generateRsaKeys()
+    print(f"Keys generated and saved to {keysDir}")
