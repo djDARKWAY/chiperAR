@@ -26,7 +26,7 @@ def verifyAndInstall(package):
         else:
             __import__(package)
     except ImportError:
-        print(f"{package} não encontrado, instalando...")
+        print(f"{package} not found, installing...")
         installPackage(package)
 def readRequirements():
     if os.path.exists("requirements.txt"):
@@ -190,42 +190,42 @@ def main():
             except Exception as e:
                 print(f"An error occurred during decryption: {e}")
         elif option == '4':
-            private_key_dir = "assets/keys/myKeys/"
+            privateKeyDir = "assets/keys/myKeys/"
             
-            private_keys = [f for f in os.listdir(private_key_dir) if f.endswith(".pem")]
+            privateKeys = [f for f in os.listdir(privateKeyDir) if f.endswith(".pem")]
             
-            if not private_keys:
-                print("Nenhuma chave privada encontrada em 'assets/keys/myKeys/'.")
+            if not privateKeys:
+                print("No private keys found in 'assets/keys/myKeys/'.")
                 continue
 
-            private_key_path = os.path.join(private_key_dir, "private_key.pem")
-            if not os.path.isfile(private_key_path):
+            privateKeyPath = os.path.join(privateKeyDir, "private_key.pem")
+            if not os.path.isfile(privateKeyPath):
                 print("Error: 'private_key.pem' not found!")
                 print("Please create a new key pair in main menu (option 5)")
                 continue
 
             while True:
-                encrypted_file_name = input("Digite o nome do ficheiro cifrado (sem extensão):\n► ") + ".bin"
-                encrypted_file_path = os.path.join(os.path.expanduser("~"), "Desktop", encrypted_file_name)
+                encryptedFileName = input("Enter the name of the encrypted file:\n► ")
+                encryptedFilePath = os.path.join(os.path.expanduser("~"), "Desktop", encryptedFileName)
                 
-                if not os.path.isfile(encrypted_file_path):
-                    print(f"Erro: O ficheiro cifrado '{encrypted_file_name}' não foi encontrado.")
+                if not os.path.isfile(encryptedFilePath):
+                    print(f"Error: The encrypted file '{encryptedFileName}' was not found.")
                     continue
                 break
 
             while True:
-                encrypted_key_file_name = input("Digite o nome do ficheiro da chave AES cifrada (sem extensão):\n► ") + ".bin"
-                encrypted_key_path = os.path.join(os.path.expanduser("~"), "Desktop", encrypted_key_file_name)
+                encryptedKeyFileName = input("Enter the name of the encrypted AES key file (.bin):\n► ") + ".bin"
+                encryptedKeyPath = os.path.join(os.path.expanduser("~"), "Desktop", encryptedKeyFileName)
                 
-                if not os.path.isfile(encrypted_key_path):
-                    print(f"Erro: O ficheiro da chave AES cifrada '{encrypted_key_file_name}' não foi encontrado.")
+                if not os.path.isfile(encryptedKeyPath):
+                    print(f"Error: The encrypted AES key file '{encryptedKeyFileName}' was not found.")
                     continue
                 break
 
             try:
-                decryptAsy.main(encrypted_file_path, encrypted_key_path, private_key_path)
+                decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath)
             except Exception as e:
-                print(f"Ocorreu um erro durante a decriptação: {e}")
+                print(f"An error occurred during decryption: {e}")
         elif option == '5':
             print("Generating RSA key pair...")
             keyGenerator.generateRsaKeys()

@@ -28,7 +28,7 @@ def generateRsaKeys():
         format=serialization.PublicFormat.SubjectPublicKeyInfo
     )
 
-    saveKeyToFile(keysDir / "private_key.pem", privateKey)
-    saveKeyToFile(keysDir / "public_key.pem", publicKey)
+    saveKeyToFile(keysDir / "privateKey.pem", privateKey)
+    saveKeyToFile(keysDir / "publicKey.pem", publicKey)
 
     print(f"Keys generated and saved to {keysDir}")
