@@ -2,6 +2,22 @@ import os
 import subprocess
 import sys
 from datetime import datetime
+
+def readRequirements():
+    with open("requirements.txt", "r") as f:
+        return f.read().splitlines()
+def installPackage(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+def uninstallPackage(package):
+    subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", package])
+
+requiredPackages = readRequirements()
+for package in requiredPackages:
+    try:
+        __import__(package)
+    except ImportError:
+        installPackage(package)
+
 import shutil
 import keyGenerator
 import encryptSy
@@ -9,32 +25,9 @@ import decryptSy
 import encryptAsy
 import decryptAsy
 import qrcode
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.backends import default_backend
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 
-def installPackage(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-def uninstallPackage(package):
-    subprocess.check_call([sys.executable, "-m", "pip", "uninstall", package, "-y"])
-def verifyAndInstall(package):
-    try:
-        if package == 'Pillow':
-            __import__('PIL')
-        else:
-            __import__(package)
-    except ImportError:
-        print(f"{package} not found, installing...")
-        installPackage(package)
-def readRequirements():
-    if os.path.exists("requirements.txt"):
-        with open("requirements.txt", 'r') as f:
-            return [line.strip() for line in f if line.strip()]
-    else:
-        print(f"File 'requirements.txt' was not found! Installing manually...")
-        return ['cryptography', 'qrcode', 'Pillow']
 def repairDependencies():
     requiredPackages = readRequirements()
 
@@ -86,22 +79,29 @@ def choosePublicKey():
         return None
 
     return os.path.join(publicKeyDir, keys[choice])
+def selectFile(titleName):
+    root = Tk()
+    root.withdraw()
+    inputFile = askopenfilename(title=titleName)
+    root.destroy()
+    return inputFile if inputFile else None
 
 def main():
     while True:
         print("\n-------------- cipherAR --------------")
         print("1. Symmetric Cryptography\n2. Asymmetric Cryptography (RSA)\n3. Reverse Symmetric Encryption\n4. Reverse Asymmetric Encryption\n5. Generate Encryption Keys\n9. Fix Dependencies\n\n0. Exit")
         print("--------------------------------------")
-
         option = input("► ")
 
         if option == '1':
-            while True:
-                inputFile = input("Enter the file name to encrypt:\n► ")
-                if not os.path.isfile(inputFile):
-                    print("File not found!")
-                    continue
-                break
+            titleName = "Select a file to encrypt with symmetric cryptography"
+            selectedFile = selectFile(titleName)
+            if selectedFile:
+                print("File to encrypt:", selectedFile)
+                inputFile = selectedFile
+            else:
+                print("File selection canceled.")
+                continue
 
             fileExtension = os.path.splitext(inputFile)[1]
             outputFile = input(f"Output encrypted file name ({fileExtension}):\n► ")
@@ -144,12 +144,14 @@ def main():
             except Exception as e:
                 print(f"An error occurred during encryption: {e}")
         elif option == '2':
-            while True:
-                inputFile = input("Enter the file name to encrypt:\n► ")
-                if not os.path.isfile(inputFile):
-                    print("File not found!")
-                    continue
-                break
+            titleName = "Select a file to encrypt with asymmetric cryptography"
+            selectedFile = selectFile(titleName)
+            if selectedFile:
+                print("File to encrypt:", selectedFile)
+                inputFile = selectedFile
+            else:
+                print("File selection canceled.")
+                continue
 
             publicKeyPath = choosePublicKey()
             if not publicKeyPath:
@@ -160,12 +162,14 @@ def main():
             except Exception as e:
                 print(f"An error occurred during encryption: {e}")
         elif option == '3':
-            while True:
-                inputFile = input("Enter the file name to decrypt:\n► ")
-                if not os.path.isfile(inputFile):
-                    print("File not found!")
-                    continue
-                break
+            titleName = "Select a file to decrypt with symmetric cryptography"
+            selectedFile = selectFile(titleName)
+            if selectedFile:
+                print("File to decrypt:", selectedFile)
+                inputFile = selectedFile
+            else:
+                print("File selection canceled.")
+                continue
 
             originalExtension = os.path.splitext(inputFile)[1]
             outputFileName = input(f"Output decrypted file name ({originalExtension}):\n► ")
@@ -198,29 +202,29 @@ def main():
                 print("No private keys found in 'assets/keys/myKeys/'.")
                 continue
 
-            privateKeyPath = os.path.join(privateKeyDir, "private_key.pem")
+            privateKeyPath = os.path.join(privateKeyDir, "privateKey.pem")
             if not os.path.isfile(privateKeyPath):
-                print("Error: 'private_key.pem' not found!")
+                print("Error: 'privateKey.pem' not found!")
                 print("Please create a new key pair in main menu (option 5)")
                 continue
 
-            while True:
-                encryptedFileName = input("Enter the name of the encrypted file:\n► ")
-                encryptedFilePath = os.path.join(os.path.expanduser("~"), "Desktop", encryptedFileName)
-                
-                if not os.path.isfile(encryptedFilePath):
-                    print(f"Error: The encrypted file '{encryptedFileName}' was not found.")
-                    continue
-                break
+            titleName = "Select a file to decrypt with asymmetric cryptography"
+            selectedFile = selectFile(titleName)
+            if selectedFile:
+                print("File to decrypt:", selectedFile)
+                encryptedFilePath = selectedFile
+            else:
+                print("File selection canceled.")
+                continue
 
-            while True:
-                encryptedKeyFileName = input("Enter the name of the encrypted AES key file (.bin):\n► ") + ".bin"
-                encryptedKeyPath = os.path.join(os.path.expanduser("~"), "Desktop", encryptedKeyFileName)
-                
-                if not os.path.isfile(encryptedKeyPath):
-                    print(f"Error: The encrypted AES key file '{encryptedKeyFileName}' was not found.")
-                    continue
-                break
+            titleName = "Select the encrypted AES key file (.bin)"
+            selectedFile = selectFile(titleName)
+            if selectedFile:
+                print("Encrypted AES key file:", selectedFile)  
+                encryptedKeyPath = selectedFile
+            else:
+                print("File selection canceled.")
+                continue
 
             try:
                 decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath)
