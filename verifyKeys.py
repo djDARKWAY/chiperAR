@@ -23,13 +23,13 @@ def TestKeyPair(publicKey, privateKey):
     return message == decryptedMessage
 
 try:
-    publicKey = LoadKey("assets/keys/myKeys/public_key.pem", isPublic=True)
+    publicKey = LoadKey("assets/keys/myKeys/publicKey.pem", isPublic=True)
     print("Chave pública carregada com sucesso.")
 except Exception as e:
     print(f"Erro ao carregar chave pública: {e}")
 
 try:
-    privateKey = LoadKey("assets/keys/myKeys/private_key.pem", isPublic=False)
+    privateKey = LoadKey("assets/keys/myKeys/privateKey.pem", isPublic=False)
     print("Chave privada carregada com sucesso.")
 except Exception as e:
     print(f"Erro ao carregar chave privada: {e}")

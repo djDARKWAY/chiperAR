@@ -15,6 +15,9 @@ def generateRsaKeys():
         backend=default_backend()
     )
 
+    keysDir = Path("assets/keys/publicKeys")
+    keysDir.mkdir(parents=True, exist_ok=True)
+
     keysDir = Path("assets/keys/myKeys")
     keysDir.mkdir(parents=True, exist_ok=True)
 
