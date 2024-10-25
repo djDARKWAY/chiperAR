@@ -1,5 +1,7 @@
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
 import os
 
@@ -16,7 +18,14 @@ def encryptRsa2048(data, publicKeyPath):
     encryptedData = cipherRsa.encrypt(data)
     return encryptedData
 
-def main(filePath, publicKeyPath):
+def sign_data(data, privateKeyPath):
+    with open(privateKeyPath, 'rb') as keyFile:
+        private_key = RSA.import_key(keyFile.read())
+    hash_data = SHA256.new(data)
+    signature = pkcs1_15.new(private_key).sign(hash_data)
+    return signature
+
+def main(filePath, publicKeyPath, privateKeyPath):
     # Ler dados binários do ficheiro
     with open(filePath, "rb") as file:
         data = file.read()
@@ -27,6 +36,9 @@ def main(filePath, publicKeyPath):
     # Cifrar os dados do ficheiro com AES-256
     encryptedDataAes = encryptAes256(data, aesKey)
     encryptedAesKey = encryptRsa2048(aesKey, publicKeyPath)
+
+    # Assinar os dados cifrados
+    signature = sign_data(encryptedDataAes, privateKeyPath)
 
     # Determinar o caminho para o ambiente de trabalho
     desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
@@ -50,3 +62,10 @@ def main(filePath, publicKeyPath):
     with open(encryptedKeyPath, "wb") as encryptedKeyFile:
         encryptedKeyFile.write(encryptedAesKey)
     print(f"Encrypted AES key saved at: {encryptedKeyPath}")
+
+    # Guardar a assinatura digital na nova pasta
+    signatureFilePath = os.path.join(folderPath, "signature.bin")
+    with open(signatureFilePath, "wb") as signatureFile:
+        signatureFile.write(signature)
+    print(f"Digital signature saved at: {signatureFilePath}")
+    

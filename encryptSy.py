@@ -48,6 +48,3 @@ def encryptFile(inputFile, outputFile, key, algorithmName):
             f.write(nonce)  # Escrever o nonce
         f.write(ciphertext)  # Escrever o texto encriptado
         f.write(hashValue.encode())  # Escrever o hash dos dados originais
-
-    # Imprimir informações sobre o processo de encriptação
-    print(f"Original File: '{inputFile}'\nEncrypted File: '{outputFile}'\nAlgorithm: {algorithmName}\nHash: '{hashValue}'")

@@ -1,5 +1,7 @@
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
+from Crypto.Signature import pkcs1_15
+from Crypto.Hash import SHA256
 import os
 
 def decryptAes256(encryptedData, key):
@@ -19,7 +21,18 @@ def decryptRsa2048(encryptedData, privateKeyPath):
     decryptedData = cipherRsa.decrypt(encryptedData)
     return decryptedData
 
-def main(encryptedFilePath, encryptedKeyPath, privateKeyPath):
+def verifySignature(publicKeyPath, data, signature):
+    with open(publicKeyPath, 'rb') as keyFile:
+        publicKey = RSA.import_key(keyFile.read())
+    
+    h = SHA256.new(data)
+    try:
+        pkcs1_15.new(publicKey).verify(h, signature)
+        print("Signature verified successfully.")
+    except (ValueError, TypeError):
+        print("Signature verification failed.")
+
+def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, publicKeyPath):
     with open(encryptedFilePath, "rb") as encryptedFile:
         encryptedDataAes = encryptedFile.read()
 
@@ -28,6 +41,11 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath):
 
     aesKey = decryptRsa2048(encryptedAesKey, privateKeyPath)
     decryptedData = decryptAes256(encryptedDataAes, aesKey)
+
+    with open(signaturePath, "rb") as signatureFile:
+        signature = signatureFile.read()
+
+    verifySignature(publicKeyPath, decryptedData, signature)
     
     # Determinar o caminho e o nome do ficheiro original
     folderPath = os.path.dirname(encryptedFilePath)

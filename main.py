@@ -79,6 +79,12 @@ def choosePublicKey():
         return None
 
     return os.path.join(publicKeyDir, keys[choice])
+def choosePrivateKey():
+    privateKeyPath = "assets/keys/myKeys/privateKey.pem"
+    if not os.path.exists(privateKeyPath):
+        print("Private key not found.")
+        return None
+    return privateKeyPath
 def selectFile(titleName):
     root = Tk()
     root.withdraw()
@@ -157,8 +163,12 @@ def main():
             if not publicKeyPath:
                 continue
 
+            privateKeyPath = choosePrivateKey()
+            if not privateKeyPath:
+                continue
+
             try:
-                encryptAsy.main(filePath=inputFile, publicKeyPath=publicKeyPath)
+                encryptAsy.main(filePath=inputFile, publicKeyPath=publicKeyPath, privateKeyPath=privateKeyPath)
             except Exception as e:
                 print(f"An error occurred during encryption: {e}")
         elif option == '3':
@@ -188,21 +198,22 @@ def main():
                     continue
 
                 decryptSy.decryptFile(inputFile, outputFile, key)
-                print(f"File '{inputFile}' decrypted to '{outputFile}' using the detected algorithm: {algorithmName}.")
+
+                desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
+                outputDir = os.path.join(desktopPath, os.path.splitext(os.path.basename(outputFile))[0])
+                os.makedirs(outputDir, exist_ok=True)
+
+                shutil.move(outputFile, os.path.join(outputDir, outputFile))
+                print(f"Decrypted file moved to '{outputDir}/{outputFile}' using the detected algorithm: {algorithmName}.")
             except ValueError:
                 print("Invalid key! Please enter a valid key.")
             except Exception as e:
                 print(f"An error occurred during decryption: {e}")
         elif option == '4':
             privateKeyDir = "assets/keys/myKeys/"
-            
-            privateKeys = [f for f in os.listdir(privateKeyDir) if f.endswith(".pem")]
-            
-            if not privateKeys:
-                print("No private keys found in 'assets/keys/myKeys/'.")
-                continue
-
             privateKeyPath = os.path.join(privateKeyDir, "privateKey.pem")
+
+            # Check if the private key exists
             if not os.path.isfile(privateKeyPath):
                 print("Error: 'privateKey.pem' not found!")
                 print("Please create a new key pair in main menu (option 5)")
@@ -217,19 +228,54 @@ def main():
                 print("File selection canceled.")
                 continue
 
-            titleName = "Select the encrypted AES key file (.bin)"
-            selectedFile = selectFile(titleName)
-            if selectedFile:
-                print("Encrypted AES key file:", selectedFile)  
-                encryptedKeyPath = selectedFile
+            # Automatically look for rsaKey.bin and signature.bin in the same directory
+            baseDir = os.path.dirname(encryptedFilePath)
+            encryptedKeyPath = os.path.join(baseDir, "rsaKey.bin")
+            signaturePath = os.path.join(baseDir, "signature.bin")
+
+            if os.path.isfile(encryptedKeyPath) and os.path.isfile(signaturePath):
+                print("Found 'rsaKey.bin' and 'signature.bin' automatically.")
             else:
-                print("File selection canceled.")
+                if not os.path.isfile(encryptedKeyPath):
+                    titleName = "Select the encrypted AES key file (.bin)"
+                    selectedFile = selectFile(titleName)
+                    if selectedFile:
+                        print("Encrypted AES key file:", selectedFile)
+                        encryptedKeyPath = selectedFile
+                    else:
+                        print("File selection canceled.")
+                        continue
+
+                if not os.path.isfile(signaturePath):
+                    titleName = "Select the digital signature file"
+                    selectedFile = selectFile(titleName)
+                    if selectedFile:
+                        print("Digital signature file:", selectedFile)
+                        signaturePath = selectedFile
+                    else:
+                        print("File selection canceled.")
+                        continue
+
+            # Path to public keys
+            publicKeyDir = "assets/keys/publicKeys/"
+            publicKeys = [os.path.join(publicKeyDir, f) for f in os.listdir(publicKeyDir) if f.endswith(".pem")]
+
+            if not publicKeys:
+                print("No public keys found.")
                 continue
 
-            try:
-                decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath)
-            except Exception as e:
-                print(f"An error occurred during decryption: {e}")
+            decryptionSuccessful = False
+            for publicKeyPath in publicKeys:
+                try:
+                    decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, publicKeyPath)
+                    print(f"Decryption successful with public key: {publicKeyPath}")
+                    decryptionSuccessful = True
+                    break
+                except Exception as e:
+                    print(f"An error occurred with public key {publicKeyPath}: {e}")
+
+            if not decryptionSuccessful:
+                print("Decryption failed with all available public keys.")
         elif option == '5':
             print("Generating RSA key pair...")
             keyGenerator.generateRsaKeys()
