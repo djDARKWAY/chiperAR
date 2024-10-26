@@ -58,7 +58,5 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, pub
         decryptedFile.write(decryptedData)
         
     # Apagar o ficheiro cifrado
-    os.remove(encryptedFilePath)
-    print(f"Encrypted file {encryptedFilePath} deleted.")
-    
-    print(f"Decrypted file saved at: {decryptedFilePath}")
+    os.remove(encryptedFilePath)    
+    print(f"Decrypted file status: OK!")

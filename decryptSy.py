@@ -49,9 +49,9 @@ def decryptFile(inputFile, outputFile, key):
 
     # Verifica a integridade dos dados usando a hash armazenada
     if verifyHash(decryptedData, hashValueStored):
-        print("Integrity check passed. Data is intact.")
+        print("Integrity check: OK!")
     else:
-        print("Integrity check failed. Data may be corrupted!")
+        print("Integrity check: FAILED!")
 
     # Escreve os dados desencriptados no ficheiro de saída
     with open(outputFile, 'wb') as f:
