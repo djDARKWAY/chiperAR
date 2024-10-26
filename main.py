@@ -15,6 +15,7 @@ requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
+        os.system('cls' if os.name == 'nt' else 'clear')
     except ImportError:
         installPackage(package)
 
@@ -37,7 +38,7 @@ def repairDependencies():
         print(f"Installing package '{package}'...")
         installPackage(package)
 def chooseAlgorithm():
-    print("Algorithm:\n1. AES-128\n2. AES-256\n3. TripleDES\n4. ChaCha20")
+    print("Algorithm:\n1. AES-128          2. AES-256\n3. TripleDES        4. ChaCha20")
     cipherChoice = input("► ")
     return {
         '1': 'AES-128',
@@ -58,12 +59,13 @@ def saveFile(outputFile, inputFile, cipherAlgorithm, key, outputDir):
         f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"Algorithm: {cipherAlgorithm}\n")
         f.write(f"Key: {key.hex()}\n")
-    print(f"File info saved to '{infoFile}'.")
+    # print(f"File info saved to '{infoFile}'.")
 def choosePublicKey():
     publicKeyDir = "assets/keys/publicKeys/"
     keys = [f for f in os.listdir(publicKeyDir) if f.endswith(".pem")]
     if not keys:
-        print("No public keys found to encrypt the AES key.")
+        print("No public keys found to encrypt the AES key.\nPress ENTER to continue...")
+        clearScreen()
         return None
 
     print("Choose one of the available public keys:")
@@ -75,14 +77,16 @@ def choosePublicKey():
         if choice < 0 or choice >= len(keys):
             raise ValueError
     except ValueError:
-        print("Invalid choice.")
+        print("Invalid choice. Press ENTER to continue...")
+        clearScreen()
         return None
 
     return os.path.join(publicKeyDir, keys[choice])
 def choosePrivateKey():
     privateKeyPath = "assets/keys/myKeys/privateKey.pem"
     if not os.path.exists(privateKeyPath):
-        print("Private key not found.")
+        print("Private key not found. Press ENTER to continue...")
+        clearScreen()
         return None
     return privateKeyPath
 def selectFile(titleName):
@@ -91,15 +95,33 @@ def selectFile(titleName):
     inputFile = askopenfilename(title=titleName)
     root.destroy()
     return inputFile if inputFile else None
+def clearScreen():
+    input()
+    os.system('cls' if os.name == 'nt' else 'clear')
+def mainLogo():
+    print("""
+         d8888 8888888b.  	      _______       __              ___    ____ 
+        d88888 888   Y88b 	     / ____(_)___  / /_  ___  _____/   |  / __ \\
+       d88P888 888    888 	    / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / 
+      d88P 888 888   d88P 	   / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  
+     d88P  888 8888888P"  	   \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_| 
+    d88P   888 888 T88b   	         /_/   
+   d8888888888 888  T88b  
+  d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity
+    """)
 
 def main():
     while True:
+        os.system('cls' if os.name == 'nt' else 'clear')
+        mainLogo()
         print("\n-------------- cipherAR --------------")
         print("1. Symmetric Cryptography\n2. Asymmetric Cryptography (RSA)\n3. Reverse Symmetric Encryption\n4. Reverse Asymmetric Encryption\n5. Generate Encryption Keys\n9. Fix Dependencies\n\n0. Exit")
         print("--------------------------------------")
         option = input("► ")
 
         if option == '1':
+            os.system('cls' if os.name == 'nt' else 'clear')
+
             titleName = "Select a file to encrypt with symmetric cryptography"
             selectedFile = selectFile(titleName)
             if selectedFile:
@@ -116,7 +138,7 @@ def main():
 
             cipherAlgorithm = chooseAlgorithm()
 
-            print("Encryption key type:\n1. Generated key\n2. Custom key")
+            print("Encryption key type:\n1. Generated key    2. Custom key")
             keyChoice = input("► ")
             if keyChoice == '1':
                 key = encryptSy.generateKey(cipherAlgorithm)
@@ -128,7 +150,7 @@ def main():
                         break
                     print(f"Invalid key length for {cipherAlgorithm}. Must be {keyLength} bytes.")
             else:
-                print("Invalid choice, generating key automatically...")
+                print("Invalid choice, generating key automatically with AES-256...")
                 key = encryptSy.generateKey(cipherAlgorithm)
 
             try:
@@ -140,16 +162,19 @@ def main():
                 os.makedirs(outputDir, exist_ok=True)
 
                 shutil.move(outputFile, os.path.join(outputDir, outputFile))
-                print(f"Encrypted file moved to '{outputDir}/{outputFile}'.")
-
                 saveFile(outputFile, inputFile, cipherAlgorithm, key, outputDir)
-
-                qrFile = generateQRC(key, outputDir)
-                print(f"QR Code saved as '{qrFile}'.")
+                print(f"Encrypted file status: OK!")
+                generateQRC(key, outputDir)
+                print(f"QR Code status: OK!")
 
             except Exception as e:
-                print(f"An error occurred during encryption: {e}")
+                print(f"An error occurred during encryption: {e}. Press ENTER to continue...")
+            print("Encryption with AES successful! Press ENTER to continue...")
+
+            clearScreen()
         elif option == '2':
+            os.system('cls' if os.name == 'nt' else 'clear')
+
             titleName = "Select a file to encrypt with asymmetric cryptography"
             selectedFile = selectFile(titleName)
             if selectedFile:
@@ -170,8 +195,12 @@ def main():
             try:
                 encryptAsy.main(filePath=inputFile, publicKeyPath=publicKeyPath, privateKeyPath=privateKeyPath)
             except Exception as e:
-                print(f"An error occurred during encryption: {e}")
+                print(f"An error occurred during encryption: {e}. Press ENTER to continue...")
+            print("Encryption with RSA successful! Press ENTER to continue...")
+            clearScreen()
         elif option == '3':
+            os.system('cls' if os.name == 'nt' else 'clear')
+
             titleName = "Select a file to decrypt with symmetric cryptography"
             selectedFile = selectFile(titleName)
             if selectedFile:
@@ -204,12 +233,17 @@ def main():
                 os.makedirs(outputDir, exist_ok=True)
 
                 shutil.move(outputFile, os.path.join(outputDir, outputFile))
-                print(f"Decrypted file moved to '{outputDir}/{outputFile}' using the detected algorithm: {algorithmName}.")
             except ValueError:
-                print("Invalid key! Please enter a valid key.")
+                print("Invalid key! Please enter a valid key next time! Press ENTER to continue...")
+                continue
             except Exception as e:
-                print(f"An error occurred during decryption: {e}")
+                print(f"An error occurred during decryption: {e}. Press ENTER to continue...")
+            print("Decryption successful! Press ENTER to continue...")
+
+            clearScreen()
         elif option == '4':
+            os.system('cls' if os.name == 'nt' else 'clear')
+
             privateKeyDir = "assets/keys/myKeys/"
             privateKeyPath = os.path.join(privateKeyDir, "privateKey.pem")
 
@@ -245,7 +279,7 @@ def main():
                     else:
                         print("File selection canceled.")
                         continue
-
+                        
                 if not os.path.isfile(signaturePath):
                     titleName = "Select the digital signature file"
                     selectedFile = selectFile(titleName)
@@ -261,28 +295,39 @@ def main():
             publicKeys = [os.path.join(publicKeyDir, f) for f in os.listdir(publicKeyDir) if f.endswith(".pem")]
 
             if not publicKeys:
-                print("No public keys found.")
+                print("No public keys found. Press ENTER to continue...")
                 continue
 
             decryptionSuccessful = False
             for publicKeyPath in publicKeys:
                 try:
                     decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, publicKeyPath)
-                    print(f"Decryption successful with public key: {publicKeyPath}")
+                    print(f"Decryption successful with public key: {publicKeyPath}. Press ENTER to continue...")
                     decryptionSuccessful = True
                     break
                 except Exception as e:
-                    print(f"An error occurred with public key {publicKeyPath}: {e}")
+                    print(f"An error occurred with public key {publicKeyPath}: {e}. Press ENTER to continue...")
 
             if not decryptionSuccessful:
-                print("Decryption failed with all available public keys.")
+                print("Decryption failed with all available public keys. Press ENTER to continue...")
+
+            clearScreen()
         elif option == '5':
+            os.system('cls' if os.name == 'nt' else 'clear')
+
             print("Generating RSA key pair...")
             keyGenerator.generateRsaKeys()
+            print("RSA key pair generated successfully. Press ENTER to continue...")
+
+            clearScreen()
         elif option == '9':
+            os.system('cls' if os.name == 'nt' else 'clear')
+
             print("Repairing dependencies...")
             repairDependencies()
-            print("Dependencies repaired successfully.")
+            print("Dependencies repaired successfully. Press ENTER to continue...")
+
+            clearScreen()
         elif option == '0':
             break
         else:

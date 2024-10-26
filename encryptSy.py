@@ -41,10 +41,10 @@ def encryptFile(inputFile, outputFile, key, algorithmName):
 
     # Escrever os dados encriptados no ficheiro de saída
     with open(outputFile, 'wb') as f:
-        f.write(algorithmName.encode() + b'\n')  # Escrever o nome do algoritmo
+        f.write(algorithmName.encode() + b'\n')
         if algorithmName.startswith("AES") or algorithmName == 'TripleDES':
-            f.write(iv)  # Escrever o vetor de inicialização
+            f.write(iv)
         elif algorithmName == 'ChaCha20':
-            f.write(nonce)  # Escrever o nonce
-        f.write(ciphertext)  # Escrever o texto encriptado
-        f.write(hashValue.encode())  # Escrever o hash dos dados originais
+            f.write(nonce)
+        f.write(ciphertext)
+        f.write(hashValue.encode())
