@@ -52,7 +52,7 @@ def generateQRC(key, outputDir):
     qr.save(qrFile)
     return qrFile
 def saveFile(outputFile, inputFile, cipherAlgorithm, key, outputDir):
-    infoFile = os.path.join(outputDir, f"{os.path.splitext(outputFile)[0]}_info.txt")
+    infoFile = os.path.join(outputDir, f"{os.path.splitext(outputFile)[0]}Info.txt")
     with open(infoFile, 'w') as f:
         f.write(f"Original File: {inputFile}\n")
         f.write(f"Encrypted File: {outputFile}\n")
@@ -145,10 +145,14 @@ def main():
             elif keyChoice == '2':
                 while True:
                     keyLength = 24 if cipherAlgorithm == 'TripleDES' else (16 if cipherAlgorithm == 'AES-128' else 32)
-                    key = input(f"Enter your key ({keyLength} bytes for {cipherAlgorithm}):\n► ").encode()
-                    if len(key) == keyLength:
-                        break
-                    print(f"Invalid key length for {cipherAlgorithm}. Must be {keyLength} bytes.")
+                    hexKey = input(f"Enter your key in hexadecimal ({keyLength * 2} hex digits for {cipherAlgorithm}):\n► ")
+                    try:
+                        key = bytes.fromhex(hexKey)
+                        if len(key) == keyLength:
+                            break
+                        print(f"Invalid key length for {cipherAlgorithm}. Must be {keyLength} bytes.")
+                    except ValueError:
+                        print("Invalid hexadecimal key. Please enter a valid key.")
             else:
                 print("Invalid choice, generating key automatically with AES-256...")
                 key = encryptSy.generateKey(cipherAlgorithm)
@@ -214,16 +218,48 @@ def main():
             outputFileName = input(f"Output decrypted file name ({originalExtension}):\n► ")
             outputFile = f"{outputFileName}{originalExtension}"
 
-            hexKey = input("Enter your key:\n► ")
+            # Look for the info file
+            infoFile = os.path.splitext(inputFile)[0] + "Info.txt"
+            if not os.path.exists(infoFile):
+                print(f"Info file '{infoFile}' not found! Please enter the key manually.")
+                hexKey = input("Enter your key in hexadecimal:\n► ")
+                try:
+                    key = bytes.fromhex(hexKey)
+                except ValueError:
+                    print("Invalid hexadecimal key. Please enter a valid key next time! Press ENTER to continue...")
+                    clearScreen()
+                    continue
+            else:
+                try:
+                    with open(infoFile, 'r') as f:
+                        lines = f.readlines()
+                        keyLine = next((line for line in lines if line.startswith("Key: ")), None)
+                        if not keyLine:
+                            print("Key not found in info file! Please enter the key manually.")
+                            hexKey = input("Enter your key in hexadecimal:\n► ")
+                            try:
+                                key = bytes.fromhex(hexKey)
+                            except ValueError:
+                                print("Invalid hexadecimal key. Please enter a valid key next time! Press ENTER to continue...")
+                                clearScreen()
+                                continue
+                        else:
+                            hexKey = keyLine.split("Key: ")[1].strip()
+                            key = bytes.fromhex(hexKey)
+                            print("Key found automatically in info file!")
+                except Exception as e:
+                    print(f"An error occurred while reading the info file: {e}. Press ENTER to continue...")
+                    clearScreen()
+                    continue
+
             try:
-                key = bytes.fromhex(hexKey)
-                
                 with open(inputFile, 'rb') as f:
                     algorithmName = f.readline().decode().strip()
-                
+
                 keyLength = 24 if algorithmName == 'TripleDES' else (16 if algorithmName == 'AES-128' else 32)
                 if len(key) != keyLength:
                     print(f"Invalid key length. Must be {keyLength} bytes for {algorithmName}.")
+                    clearScreen()
                     continue
 
                 decryptSy.decryptFile(inputFile, outputFile, key)
@@ -235,9 +271,11 @@ def main():
                 shutil.move(outputFile, os.path.join(outputDir, outputFile))
             except ValueError:
                 print("Invalid key! Please enter a valid key next time! Press ENTER to continue...")
+                clearScreen()
                 continue
             except Exception as e:
                 print(f"An error occurred during decryption: {e}. Press ENTER to continue...")
+                clearScreen()
             print("Decryption successful! Press ENTER to continue...")
 
             clearScreen()
