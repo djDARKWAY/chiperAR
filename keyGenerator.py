@@ -32,5 +32,5 @@ def generateRsaKeys():
     )
 
     # LOGS
-    # saveKeyToFile(keysDir / "privateKey.pem", privateKey)
-    # saveKeyToFile(keysDir / "publicKey.pem", publicKey)
+    saveKeyToFile(keysDir / "privateKey.pem", privateKey)
+    saveKeyToFile(keysDir / "publicKey.pem", publicKey)

@@ -1,6 +1,7 @@
 import os
 import hashlib
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+import time
+from cryptography.hazmat.primitives.ciphers import Cipher, modes
 from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20, TripleDES
 from cryptography.hazmat.backends import default_backend
 
@@ -18,28 +19,36 @@ def generateKey(algorithmName):
 
 # Função para encriptar um ficheiro
 def encryptFile(inputFile, outputFile, key, algorithmName):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    startTime = time.time()
+
     # Ler o conteúdo do ficheiro de entrada
+    print("Reading input file...")
     with open(inputFile, 'rb') as f:
         data = f.read()
 
     # Configuração do algoritmo e modo de operação
+    print("Configuring cipher...")
     if algorithmName.startswith("AES") or algorithmName == 'TripleDES':
         blockSize = 16 if algorithmName.startswith("AES") else 8
-        iv = os.urandom(blockSize)  # Vetor de inicialização
-        paddingLength = blockSize - (len(data) % blockSize)  # Calcular o padding necessário
-        paddedData = data + bytes([paddingLength] * paddingLength)  # Adicionar padding
+        iv = os.urandom(blockSize)
+        paddingLength = blockSize - (len(data) % blockSize)
+        paddedData = data + bytes([paddingLength] * paddingLength)
         cipher = Cipher(ALGORITHMS[algorithmName]['algorithm'](key), modes.CBC(iv), backend=default_backend())
     elif algorithmName == 'ChaCha20':
-        nonce = os.urandom(16)  # Nonce para ChaCha20
-        paddedData = data  # ChaCha20 não necessita de padding
+        nonce = os.urandom(16)
+        paddedData = data
         cipher = Cipher(ALGORITHMS['ChaCha20']['algorithm'](key, nonce), mode=None, backend=default_backend())
 
     # Encriptar os dados
+    print("Encrypting file...")
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(paddedData) + encryptor.finalize()
-    hashValue = hashlib.sha512(data).hexdigest()  # Calcular o hash SHA-512 dos dados originais
+    print("Creating hash...")
+    hashValue = hashlib.sha512(data).hexdigest()
 
     # Escrever os dados encriptados no ficheiro de saída
+    print("Writing to output file...")
     with open(outputFile, 'wb') as f:
         f.write(algorithmName.encode() + b'\n')
         if algorithmName.startswith("AES") or algorithmName == 'TripleDES':
@@ -48,3 +57,10 @@ def encryptFile(inputFile, outputFile, key, algorithmName):
             f.write(nonce)
         f.write(ciphertext)
         f.write(hashValue.encode())
+
+    endTime = time.time()
+    elapsedTime = endTime - startTime
+    hours, rem = divmod(elapsedTime, 3600)
+    minutes, seconds = divmod(rem, 60)
+    milliseconds = (seconds - int(seconds)) * 1000
+    print(f"\nTime elapsed: {int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds):03} seconds")

@@ -125,7 +125,7 @@ def main():
             titleName = "Select a file to encrypt with symmetric cryptography"
             selectedFile = selectFile(titleName)
             if selectedFile:
-                print("File to encrypt:", selectedFile)
+                print("File to encrypt:\n►", selectedFile)
                 inputFile = selectedFile
             else:
                 print("File selection canceled.")
@@ -173,7 +173,7 @@ def main():
 
             except Exception as e:
                 print(f"An error occurred during encryption: {e}. Press ENTER to continue...")
-            print("Encryption with AES successful! Press ENTER to continue...")
+            print("\nEncryption with AES successful! Press ENTER to continue...")
 
             clearScreen()
         elif option == '2':
@@ -200,7 +200,7 @@ def main():
                 encryptAsy.main(filePath=inputFile, publicKeyPath=publicKeyPath, privateKeyPath=privateKeyPath)
             except Exception as e:
                 print(f"An error occurred during encryption: {e}. Press ENTER to continue...")
-            print("Encryption with RSA successful! Press ENTER to continue...")
+            print("\nEncryption with RSA successful! Press ENTER to continue...")
             clearScreen()
         elif option == '3':
             os.system('cls' if os.name == 'nt' else 'clear')
@@ -276,7 +276,7 @@ def main():
             except Exception as e:
                 print(f"An error occurred during decryption: {e}. Press ENTER to continue...")
                 clearScreen()
-            print("Decryption successful! Press ENTER to continue...")
+            print("\nDecryption successful! Press ENTER to continue...")
 
             clearScreen()
         elif option == '4':
@@ -294,7 +294,7 @@ def main():
             titleName = "Select a file to decrypt with asymmetric cryptography"
             selectedFile = selectFile(titleName)
             if selectedFile:
-                print("File to decrypt:", selectedFile)
+                print("File to decrypt:\n►", selectedFile)
                 encryptedFilePath = selectedFile
             else:
                 print("File selection canceled.")
@@ -312,7 +312,7 @@ def main():
                     titleName = "Select the encrypted AES key file (.bin)"
                     selectedFile = selectFile(titleName)
                     if selectedFile:
-                        print("Encrypted AES key file:", selectedFile)
+                        print("Encrypted AES key file:\n►", selectedFile)
                         encryptedKeyPath = selectedFile
                     else:
                         print("File selection canceled.")
@@ -322,7 +322,7 @@ def main():
                     titleName = "Select the digital signature file"
                     selectedFile = selectFile(titleName)
                     if selectedFile:
-                        print("Digital signature file:", selectedFile)
+                        print("Digital signature file:\n►", selectedFile)
                         signaturePath = selectedFile
                     else:
                         print("File selection canceled.")
@@ -340,7 +340,7 @@ def main():
             for publicKeyPath in publicKeys:
                 try:
                     decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, publicKeyPath)
-                    print(f"Decryption successful with public key: {publicKeyPath}. Press ENTER to continue...")
+                    print(f"\nDecryption successful with public key: {publicKeyPath}.")
                     decryptionSuccessful = True
                     break
                 except Exception as e:
@@ -355,7 +355,7 @@ def main():
 
             print("Generating RSA key pair...")
             keyGenerator.generateRsaKeys()
-            print("RSA key pair generated successfully. Press ENTER to continue...")
+            print("RSA key pair generated successfully.")
 
             clearScreen()
         elif option == '9':
@@ -363,6 +363,7 @@ def main():
 
             print("Repairing dependencies...")
             repairDependencies()
+            print("--------------------------------------------------------------")
             print("Dependencies repaired successfully. Press ENTER to continue...")
 
             clearScreen()

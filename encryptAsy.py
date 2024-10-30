@@ -4,6 +4,7 @@ from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
 import os
+import time
 
 def encryptAes256(data, key):
     cipher = AES.new(key, AES.MODE_EAX)
@@ -26,46 +27,51 @@ def signData(data, privateKeyPath):
     return signature
 
 def main(filePath, publicKeyPath, privateKeyPath):
-    # Ler dados binários do ficheiro
+    os.system('cls' if os.name == 'nt' else 'clear')
+    startTime = time.time()
+
+    print("Reading file data...")
     with open(filePath, "rb") as file:
         data = file.read()
 
-    # Gerar chave AES-256
-    aesKey = get_random_bytes(32)  # Tamanho da chave para AES-256 é 32 bytes
+    print("Generating AES-256 key...")
+    aesKey = get_random_bytes(32)
 
-    # Cifrar os dados do ficheiro com AES-256
+    print("Encrypting file data with AES-256...")
     encryptedDataAes = encryptAes256(data, aesKey)
+
+    print("Encrypting AES key with RSA-2048...")
     encryptedAesKey = encryptRsa2048(aesKey, publicKeyPath)
 
-    # Assinar os dados cifrados
+    print("Signing encrypted data...")
     signature = signData(encryptedDataAes, privateKeyPath)
 
-    # Determinar o caminho para o ambiente de trabalho
     desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
-
-    # Criar uma pasta no ambiente de trabalho com o nome do ficheiro + (RSA)
     originalFileName = os.path.splitext(os.path.basename(filePath))[0]
     originalFileExtension = os.path.splitext(filePath)[1]
     folderName = f"{originalFileName} (RSA)"
     folderPath = os.path.join(desktopPath, folderName)
     os.makedirs(folderPath, exist_ok=True)
 
-    # Guardar o ficheiro cifrado na nova pasta com a extensão original
     encryptedFileName = f"{originalFileName}_encrypted{originalFileExtension}"
     encryptedFilePath = os.path.join(folderPath, encryptedFileName)
     with open(encryptedFilePath, "wb") as encryptedFile:
         encryptedFile.write(encryptedDataAes)
-    print(f"Encrypted file status: OK!")
+    print(f"\nEncrypted file status: OK!")
 
-    # Guardar a chave AES cifrada na nova pasta
     encryptedKeyPath = os.path.join(folderPath, "rsaKey.bin")
     with open(encryptedKeyPath, "wb") as encryptedKeyFile:
         encryptedKeyFile.write(encryptedAesKey)
     print(f"Encrypted AES key status: OK!")
 
-    # Guardar a assinatura digital na nova pasta
     signatureFilePath = os.path.join(folderPath, "signature.bin")
     with open(signatureFilePath, "wb") as signatureFile:
         signatureFile.write(signature)
     print(f"Digital signature status: OK!")
-    
+
+    endTime = time.time()
+    elapsedTime = endTime - startTime
+    hours, rem = divmod(elapsedTime, 3600)
+    minutes, seconds = divmod(rem, 60)
+    milliseconds = (seconds - int(seconds)) * 1000
+    print(f"Time elapsed: {int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds):03} seconds")

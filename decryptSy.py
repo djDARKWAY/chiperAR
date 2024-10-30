@@ -1,7 +1,9 @@
-from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.ciphers import Cipher, modes
 from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20, TripleDES
 from cryptography.hazmat.backends import default_backend
 from hashVerifier import verifyHash
+import os
+import time
 
 # Dicionário de algoritmos suportados, incluindo tamanhos de chave
 ALGORITHMS = {
@@ -12,6 +14,10 @@ ALGORITHMS = {
 }
 
 def decryptFile(inputFile, outputFile, key):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    print("Decrypting file...")
+    startTime = time.time()
+    
     # Abre o ficheiro de entrada para leitura
     with open(inputFile, 'rb') as f:
         # Lê o nome do algoritmo na primeira linha e os dados restantes
@@ -42,10 +48,10 @@ def decryptFile(inputFile, outputFile, key):
 
     # Remove o padding se necessário (aplica-se a AES e TripleDES)
     if algorithmName.startswith("AES") or algorithmName == 'TripleDES':
-        paddingLength = decryptedPadded[-1]  # Obtém o comprimento do padding
-        decryptedData = decryptedPadded[:-paddingLength]  # Remove o padding
+        paddingLength = decryptedPadded[-1]
+        decryptedData = decryptedPadded[:-paddingLength]
     else:
-        decryptedData = decryptedPadded  # Para ChaCha20, não há padding
+        decryptedData = decryptedPadded
 
     # Verifica a integridade dos dados usando a hash armazenada
     if verifyHash(decryptedData, hashValueStored):
@@ -56,3 +62,10 @@ def decryptFile(inputFile, outputFile, key):
     # Escreve os dados desencriptados no ficheiro de saída
     with open(outputFile, 'wb') as f:
         f.write(decryptedData)
+    
+    endTime = time.time()
+    elapsedTime = endTime - startTime
+    hours, rem = divmod(elapsedTime, 3600)
+    minutes, seconds = divmod(rem, 60)
+    milliseconds = (seconds - int(seconds)) * 1000
+    print(f"Time elapsed: {int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds):03} seconds")
