@@ -1,9 +1,10 @@
+import os
+import time
+from logo import logoPrint
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
-import os
-import time
 
 def decryptAes256(encryptedData, key):
     nonce = encryptedData[:16]
@@ -34,10 +35,11 @@ def verifySignature(publicKeyPath, data, signature):
         print("Signature verification failed.")
 
 def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, publicKeyPath):
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("Decrypting file...")
+    logoPrint()
+
     startTime = time.time()
 
+    print("Decrypting file...")
     with open(encryptedFilePath, "rb") as encryptedFile:
         encryptedDataAes = encryptedFile.read()
 
@@ -59,16 +61,22 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, pub
     folderPath = os.path.dirname(encryptedFilePath)
     encryptedFileName = os.path.basename(encryptedFilePath)
     originalFileName = encryptedFileName.replace("_encrypted", "")
+    
     decryptedFilePath = os.path.join(folderPath, originalFileName)
     
     print("Writing decrypted data to file...")
-    # Substituir o ficheiro cifrado pelo ficheiro decifrado
+    # Salvar o ficheiro decifrado na mesma pasta
     with open(decryptedFilePath, "wb") as decryptedFile:
         decryptedFile.write(decryptedData)
         
-    # Apagar o ficheiro cifrado
-    os.remove(encryptedFilePath)    
     print(f"\nDecrypted file status: OK!")
+
+    # Apagar os ficheiros rsaKEY, signature e o ficheiro cifrado
+    os.remove(encryptedFilePath)
+    os.remove(encryptedKeyPath)
+    os.remove(signaturePath)
+    
+    print("Deleted encrypted files and keys.")
 
     endTime = time.time()
     elapsedTime = endTime - startTime

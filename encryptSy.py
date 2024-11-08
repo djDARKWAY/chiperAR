@@ -1,6 +1,7 @@
 import os
 import hashlib
 import time
+from logo import logoPrint
 from cryptography.hazmat.primitives.ciphers import Cipher, modes
 from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20, TripleDES
 from cryptography.hazmat.backends import default_backend
@@ -19,7 +20,7 @@ def generateKey(algorithmName):
 
 # Função para encriptar um ficheiro
 def encryptFile(inputFile, outputFile, key, algorithmName):
-    os.system('cls' if os.name == 'nt' else 'clear')
+    logoPrint()
     startTime = time.time()
 
     # Ler o conteúdo do ficheiro de entrada

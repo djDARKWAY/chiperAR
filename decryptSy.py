@@ -1,9 +1,10 @@
+import os
+import time
+from logo import logoPrint
 from cryptography.hazmat.primitives.ciphers import Cipher, modes
 from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20, TripleDES
 from cryptography.hazmat.backends import default_backend
 from hashVerifier import verifyHash
-import os
-import time
 
 # Dicionário de algoritmos suportados, incluindo tamanhos de chave
 ALGORITHMS = {
@@ -14,13 +15,12 @@ ALGORITHMS = {
 }
 
 def decryptFile(inputFile, outputFile, key):
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("Decrypting file...")
+    logoPrint()
     startTime = time.time()
-    
+
+    print("Decrypting file...")
     # Abre o ficheiro de entrada para leitura
     with open(inputFile, 'rb') as f:
-        # Lê o nome do algoritmo na primeira linha e os dados restantes
         algorithmName = f.readline().decode().strip()
         data = f.read()
 

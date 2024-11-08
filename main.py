@@ -2,6 +2,10 @@ import os
 import subprocess
 import sys
 from datetime import datetime
+from logo import logoPrint
+
+os.system('cls' if os.name == 'nt' else 'clear')
+logoPrint()
 
 def readRequirements():
     with open("requirements.txt", "r") as f:
@@ -15,7 +19,6 @@ requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
-        os.system('cls' if os.name == 'nt' else 'clear')
     except ImportError:
         installPackage(package)
 
@@ -52,14 +55,13 @@ def generateQRC(key, outputDir):
     qr.save(qrFile)
     return qrFile
 def saveFile(outputFile, inputFile, cipherAlgorithm, key, outputDir):
-    infoFile = os.path.join(outputDir, f"{os.path.splitext(outputFile)[0]}Info.txt")
+    infoFile = os.path.join(outputDir, f"{os.path.splitext(outputFile)[0]}-Info.txt")
     with open(infoFile, 'w') as f:
         f.write(f"Original File: {inputFile}\n")
         f.write(f"Encrypted File: {outputFile}\n")
         f.write(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"Algorithm: {cipherAlgorithm}\n")
         f.write(f"Key: {key.hex()}\n")
-    # print(f"File info saved to '{infoFile}'.")
 def choosePublicKey():
     publicKeyDir = "assets/keys/publicKeys/"
     keys = [f for f in os.listdir(publicKeyDir) if f.endswith(".pem")]
@@ -114,13 +116,13 @@ def main():
     while True:
         os.system('cls' if os.name == 'nt' else 'clear')
         mainLogo()
-        print("\n-------------- cipherAR --------------")
-        print("1. Symmetric Cryptography\n2. Asymmetric Cryptography (RSA)\n3. Reverse Symmetric Encryption\n4. Reverse Asymmetric Encryption\n5. Generate Encryption Keys\n9. Fix Dependencies\n\n0. Exit")
+        print("-------------- cipherAR --------------")
+        print("1. Symmetric Cryptography\n2. Asymmetric Cryptography (RSA)\n3. Reverse Symmetric Encryption\n4. Reverse Asymmetric Encryption\n5. Generate Encryption Keys\n6. Public keys management\n9. Fix Dependencies\n\n0. Exit")
         print("--------------------------------------")
         option = input("► ")
 
         if option == '1':
-            os.system('cls' if os.name == 'nt' else 'clear')
+            logoPrint()
 
             titleName = "Select a file to encrypt with symmetric cryptography"
             selectedFile = selectFile(titleName)
@@ -130,11 +132,6 @@ def main():
             else:
                 print("File selection canceled.")
                 continue
-
-            fileExtension = os.path.splitext(inputFile)[1]
-            outputFile = input(f"Output encrypted file name ({fileExtension}):\n► ")
-            if not outputFile.endswith(fileExtension):
-                outputFile += fileExtension
 
             cipherAlgorithm = chooseAlgorithm()
 
@@ -158,6 +155,9 @@ def main():
                 key = encryptSy.generateKey(cipherAlgorithm)
 
             try:
+                fileExtension = os.path.splitext(inputFile)[1]
+                outputFile = os.path.splitext(os.path.basename(inputFile))[0] + " (" + cipherAlgorithm + ")" + fileExtension
+
                 encryptSy.encryptFile(inputFile, outputFile, key, cipherAlgorithm)
 
                 desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
@@ -177,7 +177,7 @@ def main():
 
             clearScreen()
         elif option == '2':
-            os.system('cls' if os.name == 'nt' else 'clear')
+            logoPrint()
 
             titleName = "Select a file to encrypt with asymmetric cryptography"
             selectedFile = selectFile(titleName)
@@ -203,7 +203,7 @@ def main():
             print("\nEncryption with RSA successful! Press ENTER to continue...")
             clearScreen()
         elif option == '3':
-            os.system('cls' if os.name == 'nt' else 'clear')
+            logoPrint()
 
             titleName = "Select a file to decrypt with symmetric cryptography"
             selectedFile = selectFile(titleName)
@@ -215,11 +215,11 @@ def main():
                 continue
 
             originalExtension = os.path.splitext(inputFile)[1]
-            outputFileName = input(f"Output decrypted file name ({originalExtension}):\n► ")
+            outputFileName = input(f"Choose an output decrypted file name ({originalExtension}):\n► ")
             outputFile = f"{outputFileName}{originalExtension}"
 
             # Look for the info file
-            infoFile = os.path.splitext(inputFile)[0] + "Info.txt"
+            infoFile = os.path.splitext(inputFile)[0] + "-Info.txt"
             if not os.path.exists(infoFile):
                 print(f"Info file '{infoFile}' not found! Please enter the key manually.")
                 hexKey = input("Enter your key in hexadecimal:\n► ")
@@ -227,7 +227,6 @@ def main():
                     key = bytes.fromhex(hexKey)
                 except ValueError:
                     print("Invalid hexadecimal key. Please enter a valid key next time! Press ENTER to continue...")
-                    clearScreen()
                     continue
             else:
                 try:
@@ -241,7 +240,6 @@ def main():
                                 key = bytes.fromhex(hexKey)
                             except ValueError:
                                 print("Invalid hexadecimal key. Please enter a valid key next time! Press ENTER to continue...")
-                                clearScreen()
                                 continue
                         else:
                             hexKey = keyLine.split("Key: ")[1].strip()
@@ -249,7 +247,6 @@ def main():
                             print("Key found automatically in info file!")
                 except Exception as e:
                     print(f"An error occurred while reading the info file: {e}. Press ENTER to continue...")
-                    clearScreen()
                     continue
 
             try:
@@ -259,7 +256,6 @@ def main():
                 keyLength = 24 if algorithmName == 'TripleDES' else (16 if algorithmName == 'AES-128' else 32)
                 if len(key) != keyLength:
                     print(f"Invalid key length. Must be {keyLength} bytes for {algorithmName}.")
-                    clearScreen()
                     continue
 
                 decryptSy.decryptFile(inputFile, outputFile, key)
@@ -271,16 +267,14 @@ def main():
                 shutil.move(outputFile, os.path.join(outputDir, outputFile))
             except ValueError:
                 print("Invalid key! Please enter a valid key next time! Press ENTER to continue...")
-                clearScreen()
                 continue
             except Exception as e:
                 print(f"An error occurred during decryption: {e}. Press ENTER to continue...")
-                clearScreen()
             print("\nDecryption successful! Press ENTER to continue...")
 
             clearScreen()
         elif option == '4':
-            os.system('cls' if os.name == 'nt' else 'clear')
+            logoPrint()
 
             privateKeyDir = "assets/keys/myKeys/"
             privateKeyPath = os.path.join(privateKeyDir, "privateKey.pem")
@@ -351,26 +345,91 @@ def main():
 
             clearScreen()
         elif option == '5':
-            os.system('cls' if os.name == 'nt' else 'clear')
+            logoPrint()
 
             print("Generating RSA key pair...")
             keyGenerator.generateRsaKeys()
             print("RSA key pair generated successfully.")
 
             clearScreen()
-        elif option == '9':
-            os.system('cls' if os.name == 'nt' else 'clear')
+        elif option == '6':
+            while True:
+                os.system('cls' if os.name == 'nt' else 'clear')
+                mainLogo()
+                print("------- Public Keys Management -------")
+                print("1. Add new\n2. Delete\n3. List all\n\n0. Back")
+                print("--------------------------------------")
+                subOption = input("► ")
 
+                if subOption == '1':
+                    logoPrint()
+
+                    titleName = "Select a public key to add"
+                    selectedFile = selectFile(titleName)
+                    if selectedFile:
+                        print("Public key to add:\n►", selectedFile)
+                        publicKey = selectedFile
+                    else:
+                        print("File selection canceled.")
+                        continue
+
+                    shutil.copy(publicKey, "assets/keys/publicKeys/")
+                    print(f"Public key '{os.path.basename(publicKey)}' added successfully.")
+                elif subOption == '2':
+                    logoPrint()
+
+                    publicKeysDir = "assets/keys/publicKeys/"
+                    publicKeys = [f for f in os.listdir(publicKeysDir) if f.endswith(".pem")]
+
+                    if not publicKeys:
+                        print("No public keys found. Press ENTER to continue...")
+                        clearScreen()
+                        continue
+
+                    print("Choose a public key to delete:")
+                    for idx, key in enumerate(publicKeys):
+                        print(f"{idx + 1}. {key}")
+
+                    try:
+                        choice = int(input("Choose a public key: ")) - 1
+                        if choice < 0 or choice >= len(publicKeys):
+                            raise ValueError
+                    except ValueError:
+                        print("Invalid choice. Press ENTER to continue...")
+                        clearScreen()
+                        continue
+
+                    os.remove(os.path.join(publicKeysDir, publicKeys[choice]))
+                    print(f"Public key '{publicKeys[choice]}' deleted successfully.")
+                elif subOption == '3':
+                    logoPrint()
+
+                    publicKeysDir = "assets/keys/publicKeys/"
+                    publicKeys = [f for f in os.listdir(publicKeysDir) if f.endswith(".pem")]
+
+                    if not publicKeys:
+                        print("No public keys found. Press ENTER to continue...")
+                        clearScreen()
+                        continue
+
+                    print("Public keys:")
+                    for idx, key in enumerate(publicKeys):
+                        print(f"{idx + 1}. {key}")
+                elif subOption == '0':
+                    break
+
+                print("Press ENTER to continue...")
+                clearScreen()
+        elif option == '9':
+            logoPrint()
             print("Repairing dependencies...")
             repairDependencies()
-            print("--------------------------------------------------------------")
+            logoPrint()
             print("Dependencies repaired successfully. Press ENTER to continue...")
 
             clearScreen()
         elif option == '0':
             break
-        else:
-            print("Please select a valid option!")
 
 if __name__ == "__main__":
     main()

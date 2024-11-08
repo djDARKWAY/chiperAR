@@ -1,10 +1,11 @@
+import os
+import time
+from logo import logoPrint
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
-import os
-import time
 
 def encryptAes256(data, key):
     cipher = AES.new(key, AES.MODE_EAX)
@@ -27,7 +28,7 @@ def signData(data, privateKeyPath):
     return signature
 
 def main(filePath, publicKeyPath, privateKeyPath):
-    os.system('cls' if os.name == 'nt' else 'clear')
+    logoPrint()
     startTime = time.time()
 
     print("Reading file data...")
