@@ -6,6 +6,8 @@ from logo import logoPrint
 
 os.system('cls' if os.name == 'nt' else 'clear')
 logoPrint()
+print("Verifiying dependencies...")
+print("--------------------------------------")
 
 def readRequirements():
     with open("requirements.txt", "r") as f:
@@ -14,14 +16,14 @@ def installPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 def uninstallPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", package])
-
+"""
 requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
     except ImportError:
         installPackage(package)
-
+"""
 import shutil
 import keyGenerator
 import encryptSy
@@ -29,6 +31,7 @@ import decryptSy
 import encryptAsy
 import decryptAsy
 import qrcode
+import zipfile
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
@@ -101,7 +104,7 @@ def clearScreen():
     input()
     os.system('cls' if os.name == 'nt' else 'clear')
 def mainLogo():
-    print("""
+    print("""\033[92m
          d8888 8888888b.  	      _______       __              ___    ____ 
         d88888 888   Y88b 	     / ____(_)___  / /_  ___  _____/   |  / __ \\
        d88P888 888    888 	    / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / 
@@ -109,7 +112,7 @@ def mainLogo():
      d88P  888 8888888P"  	   \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_| 
     d88P   888 888 T88b   	         /_/   
    d8888888888 888  T88b  
-  d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity
+  d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity\033[0m
     """)
 
 def main():
@@ -173,7 +176,8 @@ def main():
 
             except Exception as e:
                 print(f"An error occurred during encryption: {e}. Press ENTER to continue...")
-            print("\nEncryption with AES successful! Press ENTER to continue...")
+            print("--------------------------------------")
+            print("Encryption with AES successful! Press ENTER to continue...")
 
             clearScreen()
         elif option == '2':
@@ -200,7 +204,8 @@ def main():
                 encryptAsy.main(filePath=inputFile, publicKeyPath=publicKeyPath, privateKeyPath=privateKeyPath)
             except Exception as e:
                 print(f"An error occurred during encryption: {e}. Press ENTER to continue...")
-            print("\nEncryption with RSA successful! Press ENTER to continue...")
+            print("--------------------------------------")
+            print("Encryption with RSA successful! Press ENTER to continue...")
             clearScreen()
         elif option == '3':
             logoPrint()
@@ -270,7 +275,8 @@ def main():
                 continue
             except Exception as e:
                 print(f"An error occurred during decryption: {e}. Press ENTER to continue...")
-            print("\nDecryption successful! Press ENTER to continue...")
+            print("--------------------------------------")
+            print("Decryption successful! Press ENTER to continue...")
 
             clearScreen()
         elif option == '4':
@@ -357,24 +363,30 @@ def main():
                 os.system('cls' if os.name == 'nt' else 'clear')
                 mainLogo()
                 print("------- Public Keys Management -------")
-                print("1. Add new\n2. Delete\n3. List all\n\n0. Back")
+                print("1. Add new\n2. Delete\n3. List all\n4. Import file keys\n5. Export to file\n\n0. Back")
                 print("--------------------------------------")
                 subOption = input("► ")
 
                 if subOption == '1':
                     logoPrint()
 
-                    titleName = "Select a public key to add"
+                    titleName = "Select a public key to add (.pem)"
                     selectedFile = selectFile(titleName)
                     if selectedFile:
-                        print("Public key to add:\n►", selectedFile)
-                        publicKey = selectedFile
+                        if selectedFile.endswith(".pem"):
+                            print("Public key to add:\n►", selectedFile)
+                            publicKey = selectedFile
+                        else:
+                            print("Error: Only .pem files are allowed. Press ENTER to continue...")
+                            clearScreen()
+                            continue
                     else:
                         print("File selection canceled.")
                         continue
 
                     shutil.copy(publicKey, "assets/keys/publicKeys/")
                     print(f"Public key '{os.path.basename(publicKey)}' added successfully.")
+                    clearScreen()
                 elif subOption == '2':
                     logoPrint()
 
@@ -401,6 +413,7 @@ def main():
 
                     os.remove(os.path.join(publicKeysDir, publicKeys[choice]))
                     print(f"Public key '{publicKeys[choice]}' deleted successfully.")
+                    clearScreen()
                 elif subOption == '3':
                     logoPrint()
 
@@ -415,18 +428,51 @@ def main():
                     print("Public keys:")
                     for idx, key in enumerate(publicKeys):
                         print(f"{idx + 1}. {key}")
+                    clearScreen()
+                elif subOption == '4':
+                    logoPrint()
+
+                    titleName = "Select a ZIP file containing public keys"
+                    selectedFile = selectFile(titleName)
+                    if selectedFile:
+                        print("ZIP file to import:\n►", selectedFile)
+                        zipFilePath = selectedFile
+                    else:
+                        print("File selection canceled.")
+                        continue
+
+                    try:
+                        with zipfile.ZipFile(zipFilePath, 'r') as zip_ref:
+                            zip_ref.extractall(publicKeysDir)
+                        print(f"Public keys from '{os.path.basename(zipFilePath)}' imported successfully.")
+                    except Exception as e:
+                        print(f"An error occurred while importing the ZIP file: {e}.")
+                elif subOption == '5':
+                    logoPrint()
+
+                    publicKeysDir = "assets/keys/publicKeys/"
+                    publicKeys = [os.path.join(publicKeysDir, f) for f in os.listdir(publicKeysDir) if f.endswith(".pem")]
+
+                    if not publicKeys:
+                        print("No public keys found. Press ENTER to continue...")
+                        clearScreen()
+                        continue
+
+                    desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
+                    zipFileName = os.path.join(desktopPath, "publicKeys.zip")
+                    with zipfile.ZipFile(zipFileName, 'w') as zipf:
+                        for key in publicKeys:
+                            zipf.write(key, os.path.basename(key))
+
+                    print(f"All public keys have been exported to your Desktop successfully.")
                 elif subOption == '0':
                     break
-
-                print("Press ENTER to continue...")
-                clearScreen()
         elif option == '9':
             logoPrint()
             print("Repairing dependencies...")
             repairDependencies()
             logoPrint()
             print("Dependencies repaired successfully. Press ENTER to continue...")
-
             clearScreen()
         elif option == '0':
             break
