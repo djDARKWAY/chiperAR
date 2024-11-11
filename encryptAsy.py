@@ -41,11 +41,11 @@ def main(filePath, publicKeyPath, privateKeyPath):
     print("Encrypting file data with AES-256...")
     encryptedDataAes = encryptAes256(data, aesKey)
 
-    print("Encrypting AES key with RSA-2048...")
-    encryptedAesKey = encryptRsa2048(aesKey, publicKeyPath)
-
     print("Signing encrypted data...")
     signature = signData(encryptedDataAes, privateKeyPath)
+
+    print("Encrypting AES key with RSA-2048...")
+    encryptedAesKey = encryptRsa2048(aesKey, publicKeyPath)
 
     desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
     originalFileName = os.path.splitext(os.path.basename(filePath))[0]
@@ -65,7 +65,7 @@ def main(filePath, publicKeyPath, privateKeyPath):
         encryptedKeyFile.write(encryptedAesKey)
     print(f"Encrypted AES key status: OK!")
 
-    signatureFilePath = os.path.join(folderPath, "signature.bin")
+    signatureFilePath = os.path.join(folderPath, "signature.sig")
     with open(signatureFilePath, "wb") as signatureFile:
         signatureFile.write(signature)
     print(f"Digital signature status: OK!")

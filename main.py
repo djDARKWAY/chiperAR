@@ -46,12 +46,17 @@ def repairDependencies():
 def chooseAlgorithm():
     print("Algorithm:\n1. AES-128          2. AES-256\n3. TripleDES        4. ChaCha20")
     cipherChoice = input("► ")
-    return {
+    algorithm = {
         '1': 'AES-128',
         '2': 'AES-256',
         '3': 'TripleDES',
         '4': 'ChaCha20'
     }.get(cipherChoice, 'AES-256')
+    
+    if cipherChoice not in ['1', '2', '3', '4']:
+        print("Invalid choice, defaulting to AES-256.")
+    
+    return algorithm
 def generateQRC(key, outputDir):
     qr = qrcode.make(key.hex())
     qrFile = os.path.join(outputDir, 'QRC.png')
@@ -73,12 +78,12 @@ def choosePublicKey():
         clearScreen()
         return None
 
-    print("Choose one of the available public keys:")
+    print("------------- Public keys -------------")
     for idx, key in enumerate(keys):
         print(f"{idx + 1}. {key}")
 
     try:
-        choice = int(input("Choose a public key: ")) - 1
+        choice = int(input("Choose a public key:\n► ")) - 1
         if choice < 0 or choice >= len(keys):
             raise ValueError
     except ValueError:
@@ -120,7 +125,7 @@ def main():
         os.system('cls' if os.name == 'nt' else 'clear')
         mainLogo()
         print("-------------- cipherAR --------------")
-        print("1. Symmetric Cryptography\n2. Asymmetric Cryptography (RSA)\n3. Reverse Symmetric Encryption\n4. Reverse Asymmetric Encryption\n5. Generate Encryption Keys\n6. Public keys management\n9. Fix Dependencies\n\n0. Exit")
+        print("1. Symmetric cryptography\n2. Asymmetric cryptography (RSA)\n3. Decrypt symmetric encryption\n4. Decrypt asymmetric encryption\n5. Generate encryption keys\n6. Public keys management\n9. Fix Dependencies\n\n0. Exit")
         print("--------------------------------------")
         option = input("► ")
 
@@ -186,7 +191,7 @@ def main():
             titleName = "Select a file to encrypt with asymmetric cryptography"
             selectedFile = selectFile(titleName)
             if selectedFile:
-                print("File to encrypt:", selectedFile)
+                print("File to encrypt:\n►", selectedFile)
                 inputFile = selectedFile
             else:
                 print("File selection canceled.")
@@ -303,27 +308,39 @@ def main():
             # Automatically look for rsaKey.bin and signature.bin in the same directory
             baseDir = os.path.dirname(encryptedFilePath)
             encryptedKeyPath = os.path.join(baseDir, "rsaKey.bin")
-            signaturePath = os.path.join(baseDir, "signature.bin")
+            signaturePath = os.path.join(baseDir, "signature.sig")
 
             if os.path.isfile(encryptedKeyPath) and os.path.isfile(signaturePath):
-                print("Found 'rsaKey.bin' and 'signature.bin' automatically.")
+                print("Found 'rsaKey.bin' and 'signature.sig' automatically.")
             else:
                 if not os.path.isfile(encryptedKeyPath):
                     titleName = "Select the encrypted AES key file (.bin)"
                     selectedFile = selectFile(titleName)
                     if selectedFile:
-                        print("Encrypted AES key file:\n►", selectedFile)
-                        encryptedKeyPath = selectedFile
+                        if selectedFile.endswith(".bin"):
+                            print("Encrypted AES key file:\n►", selectedFile)
+                            encryptedKeyPath = selectedFile
+                        else:
+                            print("--------------------------------------")
+                            print("Only .bin files are allowed. Press ENTER to continue...")
+                            clearScreen()
+                            continue
                     else:
                         print("File selection canceled.")
                         continue
                         
                 if not os.path.isfile(signaturePath):
-                    titleName = "Select the digital signature file"
+                    titleName = "Select the digital signature file (.sig)"
                     selectedFile = selectFile(titleName)
                     if selectedFile:
-                        print("Digital signature file:\n►", selectedFile)
-                        signaturePath = selectedFile
+                        if selectedFile.endswith(".sig"):
+                            print("Digital signature file:\n►", selectedFile)
+                            signaturePath = selectedFile
+                        else:
+                            print("--------------------------------------")
+                            print("Error: Only .sig files are allowed. Press ENTER to continue...")
+                            clearScreen()
+                            continue
                     else:
                         print("File selection canceled.")
                         continue
@@ -336,19 +353,12 @@ def main():
                 print("No public keys found. Press ENTER to continue...")
                 continue
 
-            decryptionSuccessful = False
-            for publicKeyPath in publicKeys:
-                try:
-                    decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, publicKeyPath)
-                    print(f"\nDecryption successful with public key: {publicKeyPath}.")
-                    decryptionSuccessful = True
-                    break
-                except Exception as e:
-                    print(f"An error occurred with public key {publicKeyPath}: {e}. Press ENTER to continue...")
-
-            if not decryptionSuccessful:
-                print("Decryption failed with all available public keys. Press ENTER to continue...")
-
+            # Chamar a função main de decryptAsy com a lista de chaves públicas
+            try:
+                decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signaturePath)
+            except Exception as e:
+                print("--------------------------------------")
+                print(f"An error occurred during decryption: {e}. Press ENTER to continue...")
             clearScreen()
         elif option == '5':
             logoPrint()
@@ -363,7 +373,7 @@ def main():
                 os.system('cls' if os.name == 'nt' else 'clear')
                 mainLogo()
                 print("------- Public Keys Management -------")
-                print("1. Add new\n2. Delete\n3. List all\n4. Import file keys\n5. Export to file\n\n0. Back")
+                print("1. Add new\n2. Delete\n3. List all\n4. Import zip\n5. Export to zip\n\n0. Back")
                 print("--------------------------------------")
                 subOption = input("► ")
 
@@ -440,13 +450,14 @@ def main():
                     else:
                         print("File selection canceled.")
                         continue
-
+                    publicKeysDir = "assets/keys/publicKeys/"
                     try:
                         with zipfile.ZipFile(zipFilePath, 'r') as zip_ref:
                             zip_ref.extractall(publicKeysDir)
                         print(f"Public keys from '{os.path.basename(zipFilePath)}' imported successfully.")
                     except Exception as e:
                         print(f"An error occurred while importing the ZIP file: {e}.")
+                    clearScreen()
                 elif subOption == '5':
                     logoPrint()
 
@@ -463,8 +474,8 @@ def main():
                     with zipfile.ZipFile(zipFileName, 'w') as zipf:
                         for key in publicKeys:
                             zipf.write(key, os.path.basename(key))
-
-                    print(f"All public keys have been exported to your Desktop successfully.")
+                    print(f"All public keys have been exported to your desktop successfully. Press ENTER to continue...")
+                    clearScreen()
                 elif subOption == '0':
                     break
         elif option == '9':

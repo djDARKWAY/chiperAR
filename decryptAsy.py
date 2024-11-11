@@ -23,20 +23,31 @@ def decryptRsa2048(encryptedData, privateKeyPath):
     decryptedData = cipherRsa.decrypt(encryptedData)
     return decryptedData
 
-def verifySignature(publicKeyPath, data, signature):
-    with open(publicKeyPath, 'rb') as keyFile:
-        publicKey = RSA.import_key(keyFile.read())
+def verifySignature(decryptedData, signaturePath, publicKeys):
+    with open(signaturePath, "rb") as signatureFile:
+        signature = signatureFile.read()
+
+    hash_data = SHA256.new(decryptedData)
+    print(f"Hash of decrypted data: {hash_data.hexdigest()}")  # Imprime o hash
+
+    for publicKeyPath in publicKeys:
+        try:
+            print(f"Verifying signature with public key: {publicKeyPath}")
+            with open(publicKeyPath, 'rb') as pubKeyFile:
+                publicKey = RSA.import_key(pubKeyFile.read())
+
+            # Verifica a assinatura
+            pkcs1_15.new(publicKey).verify(hash_data, signature)
+            print(f"Signature verified with public key: {publicKeyPath}")
+            return True
+        except (ValueError, TypeError) as e:
+            print(f"Signature verification failed with public key {publicKeyPath}: {e}")
     
-    h = SHA256.new(data)
-    try:
-        pkcs1_15.new(publicKey).verify(h, signature)
-        print("Signature verified successfully.")
-    except (ValueError, TypeError):
-        print("Signature verification failed.")
+    print("Signature verification failed with all available public keys.")
+    return False
 
-def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, publicKeyPath):
+def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signaturePath=None):
     logoPrint()
-
     startTime = time.time()
 
     print("Decrypting file...")
@@ -46,37 +57,38 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, signaturePath, pub
     with open(encryptedKeyPath, "rb") as encryptedKeyFile:
         encryptedAesKey = encryptedKeyFile.read()
 
-    print("Decrypting AES key with RSA...")
+    # Definir caminho padrão para assinatura se não for fornecido
+    if signaturePath is None:
+        signaturePath = os.path.join(os.path.dirname(encryptedFilePath), "signature.sig")
+
+    # Tentar descriptografar usando a chave privada
+    print("Decrypting AES key with private key...")
     aesKey = decryptRsa2048(encryptedAesKey, privateKeyPath)
 
     print("Decrypting data with AES...")
     decryptedData = decryptAes256(encryptedDataAes, aesKey)
 
-    with open(signaturePath, "rb") as signatureFile:
-        signature = signatureFile.read()
-    print("Verifying signature...")
-    verifySignature(publicKeyPath, decryptedData, signature)
-    
-    # Determinar o caminho e o nome do ficheiro original
+    # Criar uma nova pasta para o ficheiro decifrado
     folderPath = os.path.dirname(encryptedFilePath)
+    decryptedFolderPath = os.path.join(folderPath, "decrypted_files")
+    os.makedirs(decryptedFolderPath, exist_ok=True)
+
+    # Determinar o nome do ficheiro original
     encryptedFileName = os.path.basename(encryptedFilePath)
     originalFileName = encryptedFileName.replace("_encrypted", "")
-    
-    decryptedFilePath = os.path.join(folderPath, originalFileName)
-    
+    decryptedFilePath = os.path.join(decryptedFolderPath, originalFileName)
+
     print("Writing decrypted data to file...")
-    # Salvar o ficheiro decifrado na mesma pasta
     with open(decryptedFilePath, "wb") as decryptedFile:
         decryptedFile.write(decryptedData)
-        
+
     print(f"\nDecrypted file status: OK!")
 
-    # Apagar os ficheiros rsaKEY, signature e o ficheiro cifrado
-    os.remove(encryptedFilePath)
-    os.remove(encryptedKeyPath)
-    os.remove(signaturePath)
-    
-    print("Deleted encrypted files and keys.")
+    # Verificação da assinatura digital
+    if verifySignature(decryptedData, signaturePath, publicKeys):
+        print("Decryption and signature verification successful.")
+    else:
+        print("Decryption successful, but signature verification failed.")
 
     endTime = time.time()
     elapsedTime = endTime - startTime

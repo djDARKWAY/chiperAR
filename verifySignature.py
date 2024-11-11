@@ -50,7 +50,7 @@ if __name__ == "__main__":
     # File paths
     dataFilePath = "requirements.txt"
     privateKeyPath = "assets/keys/myKeys/privateKey.pem"
-    publicKeyPath = "assets/keys/publicKeys/8230465.pem"
+    publicKeyPath = "assets/keys/publicKeys/Jotah.pem"
     signatureFilePath = "assets/signatures/testSignature.sig"
 
     # Create the signature
