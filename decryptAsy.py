@@ -90,6 +90,7 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signat
     else:
         print("Decryption successful, but signature verification failed.")
 
+    # Calcular o tempo de execução
     endTime = time.time()
     elapsedTime = endTime - startTime
     hours, rem = divmod(elapsedTime, 3600)

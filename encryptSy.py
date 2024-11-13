@@ -59,6 +59,7 @@ def encryptFile(inputFile, outputFile, key, algorithmName):
         f.write(ciphertext)
         f.write(hashValue.encode())
 
+    # Calcular o tempo de execução
     endTime = time.time()
     elapsedTime = endTime - startTime
     hours, rem = divmod(elapsedTime, 3600)

@@ -34,7 +34,6 @@ try:
 except Exception as e:
     print(f"Erro ao carregar chave privada: {e}")
 
-# Testar a compatibilidade das chaves
 if 'publicKey' in locals() and 'privateKey' in locals():
     if TestKeyPair(publicKey, privateKey):
         print("As chaves são compatíveis! A criptografia e a descriptografia funcionaram corretamente.")

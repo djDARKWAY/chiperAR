@@ -1,5 +1,6 @@
 import os
 def logoPrint():
+    # Limpeza do ecrâ e impressão do logótipo
     os.system('cls' if os.name == 'nt' else 'clear')
     print("""\033[92m
          d8888 8888888b.  	      _______       __              ___    ____ 

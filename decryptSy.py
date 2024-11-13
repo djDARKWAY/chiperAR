@@ -59,10 +59,11 @@ def decryptFile(inputFile, outputFile, key):
     else:
         print("Integrity check: FAILED!")
 
-    # Escreve os dados desencriptados no ficheiro de saída
+    # Escreve os dados decifrados no ficheiro de saída
     with open(outputFile, 'wb') as f:
         f.write(decryptedData)
     
+    # Calcular o tempo de execução
     endTime = time.time()
     elapsedTime = endTime - startTime
     hours, rem = divmod(elapsedTime, 3600)
