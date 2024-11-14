@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import subprocess
 from logo import logoPrint
@@ -16,14 +15,13 @@ def installPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 def uninstallPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", package])
-"""
+
 requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
     except ImportError:
         installPackage(package)
-"""
 
 from datetime import datetime
 import shutil
@@ -127,9 +125,6 @@ def isNotAllowedFile(filePath):
     fileExtension = os.path.splitext(filePath)[1].lower()
     return fileExtension in NOT_ALLOWED_EXTENSIONS
 def isInvalidFileName(fileName):
-    invalid_chars = r'<>:"/\\|?*\0'
-    if any(char in fileName for char in invalid_chars):
-        return True
     if not fileName.strip():
         return True
     if len(fileName) > 255:
