@@ -550,6 +550,17 @@ def main():
                     break
         elif option == '9':
             logoPrint()
+            
+            # Verificar conexão à internet
+            print("Checking internet connection...")
+            try:
+                import urllib.request
+                urllib.request.urlopen('http://google.com', timeout=5)
+                print("Internet connection: OK")
+            except urllib.error.URLError:
+                print("No internet connection. Please check your connection and try again. Press ENTER to continue...")
+                clearScreen()
+                continue
 
             # Reparação das dependências
             print("Repairing dependencies...")
