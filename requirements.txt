@@ -4,3 +4,5 @@ Pillow
 pycryptodome
 tk
 windows-curses
+curses
+tqdm
