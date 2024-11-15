@@ -64,7 +64,7 @@ def main(filePath, publicKeyPath, privateKeyPath):
     os.makedirs(folderPath, exist_ok=True)
 
     # Guardar ficheiro encriptado
-    encryptedFileName = f"{originalFileName}_encrypted{originalFileExtension}"
+    encryptedFileName = f"{originalFileName}{originalFileExtension}"
     encryptedFilePath = os.path.join(folderPath, encryptedFileName)
     with open(encryptedFilePath, "wb") as encryptedFile:
         encryptedFile.write(encryptedDataAes)

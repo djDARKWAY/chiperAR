@@ -116,7 +116,7 @@ def mainLogo(screen):
             "     d88P888 888    888           / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / ",
             "    d88P 888 888   d88P          / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  ",
             "   d88P  888 8888888P\"           \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_|   ",
-            "  d88P   888 888 T88b                  /_/                                   v3.7.1",
+            "  d88P   888 888 T88b                  /_/                                   v3.7.4",
             " d8888888888 888  T88b  ",
             "d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity"
         ]
@@ -311,7 +311,7 @@ def main():
 
             # Mensagem de sucesso
             print("--------------------------------------")
-            print("Encryption with AES successful! Press ENTER to continue...")
+            print("Encryption with AES successfully and saved in Desktop! Press ENTER to continue...")
 
             clearScreen()
         elif option == '2':
@@ -353,7 +353,7 @@ def main():
 
             # Mensagem de sucesso
             print("--------------------------------------")
-            print("Encryption with RSA successful! Press ENTER to continue...")
+            print("Encryption with RSA successfully and saved in Desktop! Press ENTER to continue...")
 
             clearScreen()
         elif option == '3':
@@ -378,10 +378,10 @@ def main():
                 print("File selection canceled.")
                 continue
             
-            # Escolha do nome do ficheiro de saída
+            # Nome do ficheiro de saída
             originalExtension = os.path.splitext(inputFile)[1]
-            outputFileName = input(f"Choose an output decrypted file name ({originalExtension}):\n► ")
-            outputFile = f"{outputFileName}{originalExtension}"
+            outputFileName = os.path.splitext(fileName)[0] + "_decrypted" + originalExtension
+            outputFile = outputFileName
 
             # Procura automática da chave no ficheiro de informação ou manualmente
             infoFile = os.path.splitext(inputFile)[0] + "-Info.txt"
@@ -435,7 +435,7 @@ def main():
 
             # Mensagem de sucesso
             print("--------------------------------------")
-            print("Decryption successful! Press ENTER to continue...")
+            print("Decryption successful and saved in Desktop! Press ENTER to continue...")
 
             clearScreen()
         elif option == '4':
@@ -516,6 +516,8 @@ def main():
                 continue
             try:
                 decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signaturePath)
+                print("--------------------------------------")
+                print("Decryption successful and saved in Desktop! Press ENTER to continue...")
             except Exception as e:
                 print("--------------------------------------")
                 print(f"An error occurred during decryption: {e}. Press ENTER to continue...")
@@ -527,7 +529,8 @@ def main():
             # Geração de um novo par de chaves RSA
             print("Generating RSA key pair...")
             keyGenerator.generateRsaKeys()
-            print("RSA key pair generated successfully.")
+            print("--------------------------------------")
+            print(f"RSA key pair generated successfully. Press ENTER to continue...")
 
             clearScreen()
         elif option == '6':

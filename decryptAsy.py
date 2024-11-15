@@ -68,9 +68,10 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signat
     print("Decrypting data with AES...")
     decryptedData = decryptAes256(encryptedDataAes, aesKey)
 
-    # Criar uma nova pasta para o ficheiro decifrado
-    folderPath = os.path.dirname(encryptedFilePath)
-    decryptedFolderPath = os.path.join(folderPath, "decrypted_files")
+    # Criar uma nova pasta para o ficheiro decifrado no desktop com o nome do ficheiro
+    desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
+    encryptedFileName = os.path.basename(encryptedFilePath)
+    decryptedFolderPath = os.path.join(desktopPath, os.path.splitext(encryptedFileName)[0])
     os.makedirs(decryptedFolderPath, exist_ok=True)
 
     # Determinar o nome do ficheiro original
@@ -88,7 +89,7 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signat
     if verifySignature(decryptedData, signaturePath, publicKeys):
         print("Decryption and signature verification successful.")
     else:
-        print("Decryption successful, but signature verification failed.")
+        print("Decryption successful, but signature verification failed. Nonetheless, the file was saved...")
 
     # Calcular o tempo de execução
     endTime = time.time()
