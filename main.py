@@ -1,5 +1,4 @@
 import os
-import re
 import sys
 import subprocess
 from logo import logoPrint
@@ -16,19 +15,19 @@ def installPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 def uninstallPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", package])
-"""
+
 requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
     except ImportError:
         installPackage(package)
-"""
 
 from datetime import datetime
 import shutil
 import qrcode
 import zipfile
+import curses
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 import keyGenerator
@@ -110,26 +109,27 @@ def selectFile(titleName):
 def clearScreen():
     input()
     os.system('cls' if os.name == 'nt' else 'clear')
-def mainLogo():
-    os.system('cls' if os.name == 'nt' else 'clear')
-    print("""\033[92m
-         d8888 8888888b.  	      _______       __              ___    ____ 
-        d88888 888   Y88b 	     / ____(_)___  / /_  ___  _____/   |  / __ \\
-       d88P888 888    888 	    / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / 
-      d88P 888 888   d88P 	   / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  
-     d88P  888 8888888P"  	   \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_| 
-    d88P   888 888 T88b   	         /_/   
-   d8888888888 888  T88b  
-  d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity\033[0m
-    """)
+def mainLogo(screen):
+        logoLines = [
+            "       d8888 8888888b.              _______       __              ___    ____ ",
+            "      d88888 888   Y88b            / ____(_)___  / /_  ___  _____/   |  / __ \\",
+            "     d88P888 888    888           / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / ",
+            "    d88P 888 888   d88P          / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  ",
+            "   d88P  888 8888888P\"           \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_|   ",
+            "  d88P   888 888 T88b                  /_/                                ",
+            " d8888888888 888  T88b  ",
+            "d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity"
+        ]
+        y = 1
+        x = 2
+        for line in logoLines:
+            screen.addstr(y, x, line, curses.color_pair(1))
+            y += 1
 def isNotAllowedFile(filePath):
     NOT_ALLOWED_EXTENSIONS = {'.lnk', '.exe', '.bat', '.sh', '.dll', '.sys', '.tmp'}
     fileExtension = os.path.splitext(filePath)[1].lower()
     return fileExtension in NOT_ALLOWED_EXTENSIONS
 def isInvalidFileName(fileName):
-    invalid_chars = r'<>:"/\\|?*\0'
-    if any(char in fileName for char in invalid_chars):
-        return True
     if not fileName.strip():
         return True
     if len(fileName) > 255:
@@ -138,15 +138,114 @@ def isInvalidFileName(fileName):
         return True
     return False
 
+def menuControl():
+    # Opções do menu principal
+    options = [
+        ("1", "Symmetric cryptography"),
+        ("2", "Asymmetric cryptography (RSA)"),
+        ("3", "Decrypt symmetric encryption"),
+        ("4", "Decrypt asymmetric encryption"),
+        ("5", "Generate encryption keys"),
+        ("6", "Public keys management"),
+        ("9", "Fix Dependencies"),
+        ("0", "Exit")
+    ]
+    currentOption = 0
+
+    # Função para chamar o logótipo principal
+    curses.wrapper(mainLogo)
+
+    # Função para desenhar o menu principal com as opções
+    def displayMenu(screen):
+        screen.clear()
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        mainLogo(screen)
+        menuStartY = 10
+        for idx, (option, description) in enumerate(options):
+            if idx == currentOption:
+                screen.addstr(menuStartY + idx, 5, f"> {description}", curses.A_REVERSE)
+            else:
+                screen.addstr(menuStartY + idx, 5, f"  {description}")
+        screen.refresh()
+
+    # Função para lidar com a seleção de opções
+    def handleInput(key):
+        nonlocal currentOption
+        if key == curses.KEY_UP:
+            currentOption = (currentOption - 1) % len(options)
+        elif key == curses.KEY_DOWN:
+            currentOption = (currentOption + 1) % len(options)
+        elif key in [curses.KEY_ENTER, 10, 13]:
+            return options[currentOption][0]
+        return None
+
+    # Variável para armazenar a opção selecionada
+    selectedOption = None
+
+    # Função principal para controlar o menu com a respetiva lógica
+    def menuLogic(screen):
+        nonlocal selectedOption
+        while selectedOption is None:
+            displayMenu(screen)
+            key = screen.getch()
+            selectedOption = handleInput(key)
+    curses.wrapper(menuLogic)
+    return selectedOption
+def subMenuControl():
+    # Opções do menu principal
+    options = [
+        ("1", "Add new"),
+        ("2", "Delete"),
+        ("3", "List all"),
+        ("4", "Import zip"),
+        ("5", "Export to zip"),
+        ("0", "Back")
+    ]
+    currentOption = 0
+
+    # Função para chamar o menu secundário
+    def displaySubMenu(screen):
+        screen.clear()
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        mainLogo(screen)
+        menuStartY = 10
+        for idx, (option, description) in enumerate(options):
+            if idx == currentOption:
+                screen.addstr(menuStartY + idx, 5, f"> {description}", curses.A_REVERSE)
+            else:
+                screen.addstr(menuStartY + idx, 5, f"  {description}")
+        screen.refresh()
+
+    # Função para lidar com a seleção de opções
+    def handleSubInput(key):
+        nonlocal currentOption
+        if key == curses.KEY_UP:
+            currentOption = (currentOption - 1) % len(options)
+        elif key == curses.KEY_DOWN:
+            currentOption = (currentOption + 1) % len(options)
+        elif key in [curses.KEY_ENTER, 10, 13]:
+            return options[currentOption][0]
+        return None
+
+    # Variável para armazenar a opção selecionada
+    selectedOption = None
+
+    # Função principal para controlar o menu com a respetiva lógica
+    def subMenuLogic(screen):
+        nonlocal selectedOption
+        while selectedOption is None:
+            displaySubMenu(screen)
+            key = screen.getch()
+            selectedOption = handleSubInput(key)
+    curses.wrapper(subMenuLogic)
+    return selectedOption
+
 def main():
     while True:
-        mainLogo()
-
         # Menu principal
-        print("-------------- cipherAR --------------")
-        print("1. Symmetric cryptography\n2. Asymmetric cryptography (RSA)\n3. Decrypt symmetric encryption\n4. Decrypt asymmetric encryption\n5. Generate encryption keys\n6. Public keys management\n9. Fix Dependencies\n\n0. Exit")
-        print("--------------------------------------")
-        option = input("► ")
+        option = menuControl()
 
         if option == '1':
             logoPrint()
@@ -433,13 +532,8 @@ def main():
             clearScreen()
         elif option == '6':
             while True:
-                mainLogo()
-
                 # Menu de gestão de chaves públicas
-                print("------- Public Keys Management -------")
-                print("1. Add new\n2. Delete\n3. List all\n4. Import zip\n5. Export to zip\n\n0. Back")
-                print("--------------------------------------")
-                subOption = input("► ")
+                subOption = subMenuControl()
 
                 if subOption == '1':
                     logoPrint()
@@ -555,6 +649,17 @@ def main():
                     break
         elif option == '9':
             logoPrint()
+            
+            # Verificar conexão à internet
+            print("Checking internet connection...")
+            try:
+                import urllib.request
+                urllib.request.urlopen('http://google.com', timeout=5)
+                print("Internet connection: OK")
+            except urllib.error.URLError:
+                print("No internet connection. Please check your connection and try again. Press ENTER to continue...")
+                clearScreen()
+                continue
 
             # Reparação das dependências
             print("Repairing dependencies...")
@@ -566,6 +671,7 @@ def main():
             
             clearScreen()
         elif option == '0':
+            os.system('cls' if os.name == 'nt' else 'clear')
             break
 
 if __name__ == "__main__":

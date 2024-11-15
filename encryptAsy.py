@@ -47,13 +47,13 @@ def main(filePath, publicKeyPath, privateKeyPath):
     print("Encrypting file data with AES-256...")
     encryptedDataAes = encryptAes256(data, aesKey)
 
-    # Assinar dados encriptados
-    print("Signing encrypted data...")
-    signature = signData(encryptedDataAes, privateKeyPath)
-
     # Encriptar chave AES com RSA-2048
     print("Encrypting AES key with RSA-2048...")
     encryptedAesKey = encryptRsa2048(aesKey, publicKeyPath)
+
+    # Assinar dados encriptados
+    print("Signing encrypted data...")
+    signature = signData(encryptedDataAes, privateKeyPath)
 
     # Criar diretório para guardar ficheiros encriptados e assinatura
     desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
