@@ -15,14 +15,14 @@ def installPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 def uninstallPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", package])
-
+"""
 requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
     except ImportError:
         installPackage(package)
-
+"""
 from datetime import datetime
 import shutil
 import qrcode

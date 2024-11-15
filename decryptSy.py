@@ -1,5 +1,6 @@
 import os
 import time
+from tqdm import tqdm
 from logo import logoPrint
 from cryptography.hazmat.primitives.ciphers import Cipher, modes
 from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20, TripleDES
@@ -11,7 +12,7 @@ ALGORITHMS = {
     'AES-128': {'keySize': 16, 'algorithm': AES},
     'AES-256': {'keySize': 32, 'algorithm': AES},
     'ChaCha20': {'keySize': 32, 'algorithm': ChaCha20},
-    'TripleDES': {'keySize': 24, 'algorithm': TripleDES }
+    'TripleDES': {'keySize': 24, 'algorithm': TripleDES}
 }
 
 def decryptFile(inputFile, outputFile, key):
@@ -42,9 +43,14 @@ def decryptFile(inputFile, outputFile, key):
     elif algorithmName == 'TripleDES':
         cipher = Cipher(ALGORITHMS['TripleDES']['algorithm'](key), modes.CBC(iv), backend=default_backend())
 
-    # Desencripta os dados
+    # Desencripta os dados com barra de progresso
     decryptor = cipher.decryptor()
-    decryptedPadded = decryptor.update(ciphertext) + decryptor.finalize()
+    chunkSize = 1024 * 1024  # 1 MB
+    decryptedPadded = b""
+    for i in tqdm(range(0, len(ciphertext), chunkSize), unit='MB', desc='Decrypting'):
+        chunk = ciphertext[i:i + chunkSize]
+        decryptedPadded += decryptor.update(chunk)
+    decryptedPadded += decryptor.finalize()
 
     # Remove o padding se necessário (aplica-se a AES e TripleDES)
     if algorithmName.startswith("AES") or algorithmName == 'TripleDES':
@@ -60,6 +66,7 @@ def decryptFile(inputFile, outputFile, key):
         print("Integrity check: FAILED!")
 
     # Escreve os dados decifrados no ficheiro de saída
+    print("Writing to output file...")
     with open(outputFile, 'wb') as f:
         f.write(decryptedData)
     
@@ -69,4 +76,4 @@ def decryptFile(inputFile, outputFile, key):
     hours, rem = divmod(elapsedTime, 3600)
     minutes, seconds = divmod(rem, 60)
     milliseconds = (seconds - int(seconds)) * 1000
-    print(f"Time elapsed: {int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds):03} seconds")
+    print(f"\nTime elapsed: {int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds):03} seconds")

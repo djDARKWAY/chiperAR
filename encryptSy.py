@@ -5,6 +5,7 @@ from logo import logoPrint
 from cryptography.hazmat.primitives.ciphers import Cipher, modes
 from cryptography.hazmat.primitives.ciphers.algorithms import AES, ChaCha20, TripleDES
 from cryptography.hazmat.backends import default_backend
+from tqdm import tqdm
 
 # Dicionário que mapeia os nomes dos algoritmos para os seus tamanhos de chave e classes correspondentes
 ALGORITHMS = {
@@ -41,10 +42,15 @@ def encryptFile(inputFile, outputFile, key, algorithmName):
         paddedData = data
         cipher = Cipher(ALGORITHMS['ChaCha20']['algorithm'](key, nonce), mode=None, backend=default_backend())
 
-    # Encriptar os dados
-    print("Encrypting file...")
+    # Encriptar os dados com barra de progresso
     encryptor = cipher.encryptor()
-    ciphertext = encryptor.update(paddedData) + encryptor.finalize()
+    chunkSize = 1024 * 1024  # 1 MB
+    ciphertext = b''
+    for i in tqdm(range(0, len(paddedData), chunkSize), unit='MB', desc='Encrypting'):
+        chunk = paddedData[i:i + chunkSize]
+        ciphertext += encryptor.update(chunk)
+    ciphertext += encryptor.finalize()
+
     print("Creating hash...")
     hashValue = hashlib.sha512(data).hexdigest()
 
