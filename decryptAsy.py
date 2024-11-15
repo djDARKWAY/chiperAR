@@ -82,14 +82,13 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signat
     print("Writing decrypted data to file...")
     with open(decryptedFilePath, "wb") as decryptedFile:
         decryptedFile.write(decryptedData)
-
-    print(f"\nDecrypted file status: OK!")
+    print("\033[92m\nDecrypted file status: OK!\033[0m")
 
     # Verificação da assinatura digital
     if verifySignature(decryptedData, signaturePath, publicKeys):
-        print("Decryption and signature verification successful.")
+        print("\033[92mDecryption and signature verification successful.\033[0m")
     else:
-        print("Decryption successful, but signature verification failed. Nonetheless, the file was saved...")
+        print("\033[91mDecryption successful, but signature verification failed. Nonetheless, the file was saved...\033[0m")
 
     # Calcular o tempo de execução
     endTime = time.time()

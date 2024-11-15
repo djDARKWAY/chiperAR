@@ -116,7 +116,7 @@ def mainLogo(screen):
             "     d88P888 888    888           / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / ",
             "    d88P 888 888   d88P          / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  ",
             "   d88P  888 8888888P\"           \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_|   ",
-            "  d88P   888 888 T88b                  /_/                                   v3.7.4",
+            "  d88P   888 888 T88b                  /_/                                   v3.7.5",
             " d8888888888 888  T88b  ",
             "d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity"
         ]
@@ -269,7 +269,7 @@ def main():
                 print("File selection canceled.")
                 continue
            
-            # Escollha do algoritmo
+            # Escolha do algoritmo
             cipherAlgorithm = chooseAlgorithm()
 
             # Escolha do tipo de chave
@@ -303,9 +303,9 @@ def main():
                 os.makedirs(outputDir, exist_ok=True)
                 shutil.move(outputFile, os.path.join(outputDir, outputFile))
                 saveFile(outputFile, inputFile, cipherAlgorithm, key, outputDir)
-                print(f"Encrypted file status: OK!")
+                print(f"\033[92mEncrypted file status: OK!\033[0m")
                 generateQRC(key, outputDir)
-                print(f"QR Code status: OK!")
+                print(f"\033[92mQR Code status: OK!\033[0m")
             except Exception as e:
                 print(f"An error occurred during encryption: {e}. Press ENTER to continue...")
 

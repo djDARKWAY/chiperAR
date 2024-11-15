@@ -68,19 +68,19 @@ def main(filePath, publicKeyPath, privateKeyPath):
     encryptedFilePath = os.path.join(folderPath, encryptedFileName)
     with open(encryptedFilePath, "wb") as encryptedFile:
         encryptedFile.write(encryptedDataAes)
-    print(f"\nEncrypted file status: OK!")
+    print("\033[92mEncrypted file status: OK!\033[0m")
 
     # Guardar chave AES encriptada
     encryptedKeyPath = os.path.join(folderPath, "rsaKey.bin")
     with open(encryptedKeyPath, "wb") as encryptedKeyFile:
         encryptedKeyFile.write(encryptedAesKey)
-    print(f"Encrypted AES key status: OK!")
+    print("\033[92mEncrypted AES key status: OK!\033[0m")
 
     # Guardar assinatura digital
     signatureFilePath = os.path.join(folderPath, "signature.sig")
     with open(signatureFilePath, "wb") as signatureFile:
         signatureFile.write(signature)
-    print(f"Digital signature status: OK!")
+    print("\033[92mDigital signature status: OK!\033[0m")
 
     # Calcular o tempo de execução
     endTime = time.time()

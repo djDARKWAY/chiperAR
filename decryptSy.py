@@ -19,7 +19,6 @@ def decryptFile(inputFile, outputFile, key):
     logoPrint()
     startTime = time.time()
 
-    print("Decrypting file...")
     # Abre o ficheiro de entrada para leitura
     with open(inputFile, 'rb') as f:
         algorithmName = f.readline().decode().strip()
@@ -61,9 +60,9 @@ def decryptFile(inputFile, outputFile, key):
 
     # Verifica a integridade dos dados usando a hash armazenada
     if verifyHash(decryptedData, hashValueStored):
-        print("Integrity check: OK!")
+        print("\033[92m\nIntegrity check: OK!\033[0m")
     else:
-        print("Integrity check: FAILED!")
+        print("\033[91m\nIntegrity check: FAILED!\033[0m")
 
     # Escreve os dados decifrados no ficheiro de saída
     print("Writing to output file...")
