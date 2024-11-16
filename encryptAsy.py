@@ -58,6 +58,10 @@ def main(filePath, publicKeyPath, privateKeyPath):
     with open(filePath, "rb") as file:
         data = file.read()
 
+    # Assinar dados antes da encriptação
+    print("Signing original data...")
+    signature = signData(data, privateKeyPath)
+
     # Gerar chave AES-256
     print("Generating AES-256 key...")
     aesKey = get_random_bytes(32)
@@ -69,10 +73,6 @@ def main(filePath, publicKeyPath, privateKeyPath):
     # Encriptar chave AES com RSA-2048
     print("Encrypting AES key with RSA-2048...")
     encryptedAesKey = encryptRsa2048(aesKey, publicKeyPath)
-
-    # Assinar dados encriptados
-    print("Signing encrypted data...")
-    signature = signData(encryptedDataAes, privateKeyPath)
 
     # Criar diretório para guardar ficheiros encriptados e assinatura
     desktopPath = os.path.join(os.path.expanduser("~"), "Desktop")
@@ -98,7 +98,7 @@ def main(filePath, publicKeyPath, privateKeyPath):
     # Guardar assinatura digital
     signatureFilePath = os.path.join(folderPath, "signature.sig")
     with open(signatureFilePath, "wb") as signatureFile:
-        signatureFile.write(signature)
+        signatureFile.write(signature)  # Guardar a assinatura antes da encriptação
     print("\033[92mDigital signature status: OK!\033[0m")
 
     # Calcular o tempo de execução
@@ -108,4 +108,3 @@ def main(filePath, publicKeyPath, privateKeyPath):
     minutes, seconds = divmod(rem, 60)
     milliseconds = (seconds - int(seconds)) * 1000
     print(f"Time elapsed: {int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds):03} seconds")
-
