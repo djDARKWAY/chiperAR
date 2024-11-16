@@ -42,7 +42,7 @@ Para facilitar este processo, o programa utiliza um ficheiro chamado `requiremen
 Se preferir, pode instalar cada biblioteca manualmente com um destes scripts:
 ```bash
 pip install -r requirements.txt
-pip install cryptography qrcode Pillow pycryptodome tk
+pip install cryptography qrcode Pillow pycryptodome tk windows-curses tqdm
 ```
 
 ### Bibliotecas externas
