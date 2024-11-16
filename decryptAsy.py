@@ -24,27 +24,39 @@ def decryptRsa2048(encryptedData, privateKeyPath):
     return decryptedData
 
 def verifySignature(decryptedData, signaturePath, publicKeys):
-    with open(signaturePath, "rb") as signatureFile:
-        signature = signatureFile.read()
+    try:
+        # Lê a assinatura digital
+        with open(signaturePath, "rb") as signatureFile:
+            signature = signatureFile.read()
 
-    hash_data = SHA256.new(decryptedData)
-    print(f"Hash of decrypted data: {hash_data.hexdigest()}")  # Imprime o hash
+        print(f"Assinatura lida (tamanho: {len(signature)}): {signature.hex()}")
 
-    for publicKeyPath in publicKeys:
-        try:
-            print(f"Verifying signature with public key: {publicKeyPath}")
-            with open(publicKeyPath, 'rb') as pubKeyFile:
-                publicKey = RSA.import_key(pubKeyFile.read())
+        # Calcula o hash dos dados desencriptados
+        hash_data = SHA256.new(decryptedData)
+        print(f"Hash dos dados desencriptados: {hash_data.hexdigest()}")
 
-            # Verifica a assinatura
-            pkcs1_15.new(publicKey).verify(hash_data, signature)
-            print(f"Signature verified with public key: {publicKeyPath}")
-            return True
-        except (ValueError, TypeError) as e:
-            print(f"Signature verification failed with public key {publicKeyPath}: {e}")
-    
-    print("Signature verification failed with all available public keys.")
-    return False
+        # Verifica a assinatura com cada chave pública fornecida
+        for publicKeyPath in publicKeys:
+            try:
+                print(f"Tentativa de verificação com a chave pública: {publicKeyPath}")
+                with open(publicKeyPath, 'rb') as pubKeyFile:
+                    publicKey = RSA.import_key(pubKeyFile.read())
+
+                # Verifica a assinatura
+                pkcs1_15.new(publicKey).verify(hash_data, signature)
+                print(f"\033[92mAssinatura verificada com sucesso com a chave pública: {publicKeyPath}\033[0m")
+                return True  # Retorna sucesso na primeira verificação válida
+            except (ValueError, TypeError) as e:
+                print(f"\033[93mFalha na verificação com a chave pública {publicKeyPath}: {e}\033[0m")
+
+        # Se nenhuma chave pública validar a assinatura
+        print("\033[91mFalha na verificação da assinatura com todas as chaves disponíveis.\033[0m")
+        return False
+
+    except Exception as e:
+        print(f"\033[91mErro ao verificar a assinatura: {e}\033[0m")
+        return False
+
 
 def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signaturePath=None):
     logoPrint()

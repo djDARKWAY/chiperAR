@@ -12,23 +12,42 @@ def encryptAes256(data, key):
     cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
     ciphertext, tag = cipher.encrypt_and_digest(data)
+    print(f"AES Encryption complete. Nonce: {nonce.hex()[:10]}... Tag: {tag.hex()[:10]}...")  # Depuração
     return nonce + tag + ciphertext
 
 # Função para encriptar dados com RSA-2048
 def encryptRsa2048(data, publicKeyPath):
+    print(f"Loading public key from: {publicKeyPath}")
     with open(publicKeyPath, 'rb') as keyFile:
         public_key = RSA.import_key(keyFile.read())
     cipherRsa = PKCS1_OAEP.new(public_key)
     encryptedData = cipherRsa.encrypt(data)
+    print(f"RSA Encryption complete. Encrypted data size: {len(encryptedData)} bytes")  # Depuração
     return encryptedData
 
 # Função para assinar dados com chave privada RSA
 def signData(data, privateKeyPath):
+    print(f"Loading private key from: {privateKeyPath}")
     with open(privateKeyPath, 'rb') as keyFile:
         private_key = RSA.import_key(keyFile.read())
     hash_data = SHA256.new(data)
     signature = pkcs1_15.new(private_key).sign(hash_data)
+    print(f"Data signed. Signature size: {len(signature)} bytes")  # Depuração
     return signature
+
+# Função para verificar assinatura com chave pública RSA
+def verifySignature(data, signature, publicKeyPath):
+    print(f"Loading public key for verification from: {publicKeyPath}")
+    with open(publicKeyPath, 'rb') as keyFile:
+        public_key = RSA.import_key(keyFile.read())
+    hash_data = SHA256.new(data)
+    try:
+        pkcs1_15.new(public_key).verify(hash_data, signature)
+        print(f"Signature verified successfully!")  # Depuração
+        return True
+    except (ValueError, TypeError):
+        print(f"Signature verification failed!")  # Depuração
+        return False
 
 def main(filePath, publicKeyPath, privateKeyPath):
     logoPrint()
@@ -89,3 +108,4 @@ def main(filePath, publicKeyPath, privateKeyPath):
     minutes, seconds = divmod(rem, 60)
     milliseconds = (seconds - int(seconds)) * 1000
     print(f"Time elapsed: {int(hours):02}:{int(minutes):02}:{int(seconds):02}:{int(milliseconds):03} seconds")
+

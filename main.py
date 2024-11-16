@@ -116,7 +116,7 @@ def mainLogo(screen):
             "     d88P888 888    888           / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / ",
             "    d88P 888 888   d88P          / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  ",
             "   d88P  888 8888888P\"           \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_|   ",
-            "  d88P   888 888 T88b                  /_/                                   v3.7.5",
+            "  d88P   888 888 T88b                  /_/                                   v3.7.8",
             " d8888888888 888  T88b  ",
             "d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity"
         ]
@@ -147,7 +147,7 @@ def menuControl():
         ("4", "Decrypt asymmetric encryption"),
         ("5", "Generate encryption keys"),
         ("6", "Public keys management"),
-        ("9", "Fix Dependencies"),
+        ("9", "Fix dependencies"),
         ("0", "Exit")
     ]
     currentOption = 0
@@ -158,13 +158,14 @@ def menuControl():
     # Função para desenhar o menu principal com as opções
     def displayMenu(screen):
         screen.clear()
+        curses.curs_set(0)
         curses.start_color()
         curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
         mainLogo(screen)
         menuStartY = 10
         for idx, (option, description) in enumerate(options):
             if idx == currentOption:
-                screen.addstr(menuStartY + idx, 5, f"> {description}", curses.A_REVERSE)
+                screen.addstr(menuStartY + idx, 5, f"› {description}", curses.A_REVERSE)
             else:
                 screen.addstr(menuStartY + idx, 5, f"  {description}")
         screen.refresh()
@@ -192,6 +193,7 @@ def menuControl():
             selectedOption = handleInput(key)
     curses.wrapper(menuLogic)
     return selectedOption
+
 def subMenuControl():
     # Opções do menu principal
     options = [
@@ -207,13 +209,14 @@ def subMenuControl():
     # Função para chamar o menu secundário
     def displaySubMenu(screen):
         screen.clear()
+        curses.curs_set(0)
         curses.start_color()
         curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
         mainLogo(screen)
         menuStartY = 10
         for idx, (option, description) in enumerate(options):
             if idx == currentOption:
-                screen.addstr(menuStartY + idx, 5, f"> {description}", curses.A_REVERSE)
+                screen.addstr(menuStartY + idx, 5, f"› {description}", curses.A_REVERSE)
             else:
                 screen.addstr(menuStartY + idx, 5, f"  {description}")
         screen.refresh()
