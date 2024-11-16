@@ -5,68 +5,63 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
-import hashlib
 
+# Função para desencriptar dados com AES-256
 def decryptAes256(encryptedData, key):
     nonce = encryptedData[:16]
     tag = encryptedData[16:32]
     ciphertext = encryptedData[32:]
-    
     cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
     data = cipher.decrypt_and_verify(ciphertext, tag)
     return data
 
+# Função para desencriptar dados com RSA-2048
 def decryptRsa2048(encryptedData, privateKeyPath):
     with open(privateKeyPath, 'rb') as keyFile:
-        privateKey = RSA.import_key(keyFile.read())
-    
+        privateKey = RSA.import_key(keyFile.read())   
     cipherRsa = PKCS1_OAEP.new(privateKey)
     decryptedData = cipherRsa.decrypt(encryptedData)
     return decryptedData
 
+# Função para verificar a assinatura digital e a integridade dos dados
 def verifySignature(decryptedData, signaturePath, publicKeys, originalData=None):
     try:
         # Lê a assinatura digital
         with open(signaturePath, "rb") as signatureFile:
             signature = signatureFile.read()
 
-        print(f"Assinatura lida (tamanho: {len(signature)}): {signature.hex()}")
-
         # Calcula o hash dos dados desencriptados
-        hash_data = SHA256.new(decryptedData)
-        print(f"Hash dos dados desencriptografados: {hash_data.hexdigest()}")
+        hash_decrypted = SHA256.new(decryptedData)
 
         # Verifica a assinatura com cada chave pública fornecida
         for publicKeyPath in publicKeys:
             try:
-                print(f"Tentativa de verificação com a chave pública: {publicKeyPath}")
                 with open(publicKeyPath, 'rb') as pubKeyFile:
                     publicKey = RSA.import_key(pubKeyFile.read())
 
                 # Verifica a assinatura
-                pkcs1_15.new(publicKey).verify(hash_data, signature)
-                print(f"\033[92mAssinatura verificada com sucesso com a chave pública: {publicKeyPath}\033[0m")
+                pkcs1_15.new(publicKey).verify(hash_decrypted, signature)
+                print(f"\033[92m\nSignature status: OK! ({os.path.basename(publicKeyPath)})\033[0m")
                 
                 # Verificação da integridade dos dados (hash de integridade)
                 if originalData:
-                    hash_original = hashlib.sha256(originalData).hexdigest()
-                    if hash_original == hash_data.hexdigest():
-                        print("\033[92mIntegridade verificada com sucesso. Os dados não foram alterados.\033[0m")
+                    hash_original = SHA256.new(originalData).hexdigest()
+                    if hash_original == hash_decrypted.hexdigest():
+                        print("\033[92mIntegrity status: OK!\033[0m")
+                        return True
                     else:
-                        print("\033[91mFalha na verificação de integridade. Os dados foram alterados.\033[0m")
+                        print("\033[91mIntegrity status: FAILED!\033[0m")
 
-                return True  # Retorna sucesso na primeira verificação válida
             except (ValueError, TypeError) as e:
-                print(f"\033[93mFalha na verificação com a chave pública {publicKeyPath}: {e}\033[0m")
+                continue
 
         # Se nenhuma chave pública validar a assinatura
-        print("\033[91mFalha na verificação da assinatura com todas as chaves disponíveis.\033[0m")
+        print("\033[91mSignature verification failed with all available keys.\033[0m")
         return False
 
     except Exception as e:
-        print(f"\033[91mErro ao verificar a assinatura: {e}\033[0m")
+        print(f"\033[91mError verifying signature: {e}\033[0m")
         return False
-
 
 def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signaturePath=None):
     logoPrint()
@@ -100,19 +95,16 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signat
     originalFileName = encryptedFileName.replace("_encrypted", "")
     decryptedFilePath = os.path.join(decryptedFolderPath, originalFileName)
 
+    # Escrever os dados desencriptados para um ficheiro
     print("Writing decrypted data to file...")
     with open(decryptedFilePath, "wb") as decryptedFile:
         decryptedFile.write(decryptedData)
-    print("\033[92m\nDecrypted file status: OK!\033[0m")
 
     # Verificação da assinatura digital e integridade dos dados
-    with open(encryptedFilePath, "rb") as originalFile:
-        originalData = originalFile.read()
-
-    if verifySignature(decryptedData, signaturePath, publicKeys, originalData=originalData):
-        print("\033[92mDecryption and signature verification successful.\033[0m")
+    if verifySignature(decryptedData, signaturePath, publicKeys, originalData=decryptedData):
+        print("\033[92mDecryption status: OK!\033[0m")
     else:
-        print("\033[91mDecryption successful, but signature verification failed. Nonetheless, the file was saved...\033[0m")
+        print("\033[91mDecryption status: OK, but signature verification failed. Nonetheless, the file was saved...\033[0m")
 
     # Calcular o tempo de execução
     endTime = time.time()

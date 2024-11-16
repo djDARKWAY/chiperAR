@@ -15,14 +15,14 @@ def installPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 def uninstallPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", package])
-"""
+
 requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
     except ImportError:
         installPackage(package)
-"""
+
 from datetime import datetime
 import shutil
 import qrcode
@@ -116,7 +116,7 @@ def mainLogo(screen):
             "     d88P888 888    888           / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / ",
             "    d88P 888 888   d88P          / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  ",
             "   d88P  888 8888888P\"           \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_|   ",
-            "  d88P   888 888 T88b                  /_/                                   v3.8.1b",
+            "  d88P   888 888 T88b                  /_/                                   v3.9.0",
             " d8888888888 888  T88b  ",
             "d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity"
         ]
@@ -520,7 +520,7 @@ def main():
             try:
                 decryptAsy.main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signaturePath)
                 print("--------------------------------------")
-                print("Decryption successful and saved in Desktop! Press ENTER to continue...")
+                print("Press ENTER to continue...")
             except Exception as e:
                 print("--------------------------------------")
                 print(f"An error occurred during decryption: {e}. Press ENTER to continue...")

@@ -12,27 +12,22 @@ def encryptAes256(data, key):
     cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
     ciphertext, tag = cipher.encrypt_and_digest(data)
-    print(f"AES Encryption complete. Nonce: {nonce.hex()[:10]}... Tag: {tag.hex()[:10]}...")  # Depuração
     return nonce + tag + ciphertext
 
 # Função para encriptar dados com RSA-2048
 def encryptRsa2048(data, publicKeyPath):
-    print(f"Loading public key from: {publicKeyPath}")
     with open(publicKeyPath, 'rb') as keyFile:
         public_key = RSA.import_key(keyFile.read())
     cipherRsa = PKCS1_OAEP.new(public_key)
     encryptedData = cipherRsa.encrypt(data)
-    print(f"RSA Encryption complete. Encrypted data size: {len(encryptedData)} bytes")  # Depuração
     return encryptedData
 
 # Função para assinar dados com chave privada RSA
 def signData(data, privateKeyPath):
-    print(f"Loading private key from: {privateKeyPath}")
     with open(privateKeyPath, 'rb') as keyFile:
         private_key = RSA.import_key(keyFile.read())
     hash_data = SHA256.new(data)
     signature = pkcs1_15.new(private_key).sign(hash_data)
-    print(f"Data signed. Signature size: {len(signature)} bytes")  # Depuração
     return signature
 
 # Função para verificar assinatura com chave pública RSA
@@ -43,10 +38,8 @@ def verifySignature(data, signature, publicKeyPath):
     hash_data = SHA256.new(data)
     try:
         pkcs1_15.new(public_key).verify(hash_data, signature)
-        print(f"Signature verified successfully!")  # Depuração
         return True
     except (ValueError, TypeError):
-        print(f"Signature verification failed!")  # Depuração
         return False
 
 def main(filePath, publicKeyPath, privateKeyPath):
@@ -58,10 +51,6 @@ def main(filePath, publicKeyPath, privateKeyPath):
     with open(filePath, "rb") as file:
         data = file.read()
 
-    # Assinar dados antes da encriptação
-    print("Signing original data...")
-    signature = signData(data, privateKeyPath)
-
     # Gerar chave AES-256
     print("Generating AES-256 key...")
     aesKey = get_random_bytes(32)
@@ -69,6 +58,10 @@ def main(filePath, publicKeyPath, privateKeyPath):
     # Encriptar dados do ficheiro com AES-256
     print("Encrypting file data with AES-256...")
     encryptedDataAes = encryptAes256(data, aesKey)
+
+    # Assinar os dados originais antes da encriptação
+    print("Signing original data...")
+    signature = signData(data, privateKeyPath)
 
     # Encriptar chave AES com RSA-2048
     print("Encrypting AES key with RSA-2048...")
@@ -87,7 +80,7 @@ def main(filePath, publicKeyPath, privateKeyPath):
     encryptedFilePath = os.path.join(folderPath, encryptedFileName)
     with open(encryptedFilePath, "wb") as encryptedFile:
         encryptedFile.write(encryptedDataAes)
-    print("\033[92mEncrypted file status: OK!\033[0m")
+    print("\033[92m\nEncrypted file status: OK!\033[0m")
 
     # Guardar chave AES encriptada
     encryptedKeyPath = os.path.join(folderPath, "rsaKey.bin")
@@ -98,7 +91,7 @@ def main(filePath, publicKeyPath, privateKeyPath):
     # Guardar assinatura digital
     signatureFilePath = os.path.join(folderPath, "signature.sig")
     with open(signatureFilePath, "wb") as signatureFile:
-        signatureFile.write(signature)  # Guardar a assinatura antes da encriptação
+        signatureFile.write(signature)
     print("\033[92mDigital signature status: OK!\033[0m")
 
     # Calcular o tempo de execução
