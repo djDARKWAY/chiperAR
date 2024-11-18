@@ -36,6 +36,7 @@ import decryptSy
 import encryptAsy
 import decryptAsy
 
+# Funções auxiliares
 def repairDependencies():
     requiredPackages = readRequirements()
 
@@ -116,7 +117,7 @@ def mainLogo(screen):
             "     d88P888 888    888           / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / ",
             "    d88P 888 888   d88P          / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  ",
             "   d88P  888 8888888P\"           \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_|   ",
-            "  d88P   888 888 T88b                  /_/                                   v4.0.0",
+            "  d88P   888 888 T88b                  /_/                                   v4.0.2",
             " d8888888888 888  T88b  ",
             "d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity"
         ]
@@ -137,9 +138,41 @@ def isInvalidFileName(fileName):
     if any(ord(char) < 32 or ord(char) > 126 for char in fileName):
         return True
     return False
+# Funções de menu
+def displayMenu(screen, options, currentOption, title):
+    # Limpar o ecrã e esconder o cursor
+    screen.clear()
+    curses.curs_set(0)
+    curses.start_color()
+    curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
 
+    # Mostrar o logo principal
+    mainLogo(screen)
+
+    # Adicionar o título do menu
+    title_start_y = 10
+    title_start_x = 5
+    screen.addstr(title_start_y, title_start_x, title, curses.color_pair(1) | curses.A_BOLD)
+
+    # Mostrar as opções do menu
+    menuStartY = 11
+    for idx, (option, description) in enumerate(options):
+        if idx == currentOption:
+            screen.addstr(menuStartY + idx, 5, f"› {description}", curses.A_REVERSE)
+        else:
+            screen.addstr(menuStartY + idx, 5, f"  {description}")
+
+    # Atualizar o ecrã
+    screen.refresh()
+def handleInput(key, currentOption, options):
+    if key == curses.KEY_UP:
+        currentOption = (currentOption - 1) % len(options)
+    elif key == curses.KEY_DOWN:
+        currentOption = (currentOption + 1) % len(options)
+    elif key in [curses.KEY_ENTER, 10, 13]:
+        return options[currentOption][0], currentOption
+    return None, currentOption
 def menuControl():
-    # Opções do menu principal
     options = [
         ("1", "Symmetric cryptography"),
         ("2", "Asymmetric cryptography (RSA)"),
@@ -151,51 +184,17 @@ def menuControl():
         ("0", "Exit")
     ]
     currentOption = 0
-
-    # Função para chamar o logótipo principal
-    curses.wrapper(mainLogo)
-
-    # Função para desenhar o menu principal com as opções
-    def displayMenu(screen):
-        screen.clear()
-        curses.curs_set(0)
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        mainLogo(screen)
-        menuStartY = 10
-        for idx, (option, description) in enumerate(options):
-            if idx == currentOption:
-                screen.addstr(menuStartY + idx, 5, f"› {description}", curses.A_REVERSE)
-            else:
-                screen.addstr(menuStartY + idx, 5, f"  {description}")
-        screen.refresh()
-
-    # Função para lidar com a seleção de opções
-    def handleInput(key):
-        nonlocal currentOption
-        if key == curses.KEY_UP:
-            currentOption = (currentOption - 1) % len(options)
-        elif key == curses.KEY_DOWN:
-            currentOption = (currentOption + 1) % len(options)
-        elif key in [curses.KEY_ENTER, 10, 13]:
-            return options[currentOption][0]
-        return None
-
-    # Variável para armazenar a opção selecionada
     selectedOption = None
 
-    # Função principal para controlar o menu com a respetiva lógica
     def menuLogic(screen):
-        nonlocal selectedOption
+        nonlocal selectedOption, currentOption
         while selectedOption is None:
-            displayMenu(screen)
+            displayMenu(screen, options, currentOption, "MAIN MENU")
             key = screen.getch()
-            selectedOption = handleInput(key)
+            selectedOption, currentOption = handleInput(key, currentOption, options)
     curses.wrapper(menuLogic)
     return selectedOption
-
 def subMenuControl():
-    # Opções do menu principal
     options = [
         ("1", "Add new"),
         ("2", "Delete"),
@@ -205,43 +204,14 @@ def subMenuControl():
         ("0", "Back")
     ]
     currentOption = 0
-
-    # Função para chamar o menu secundário
-    def displaySubMenu(screen):
-        screen.clear()
-        curses.curs_set(0)
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        mainLogo(screen)
-        menuStartY = 10
-        for idx, (option, description) in enumerate(options):
-            if idx == currentOption:
-                screen.addstr(menuStartY + idx, 5, f"› {description}", curses.A_REVERSE)
-            else:
-                screen.addstr(menuStartY + idx, 5, f"  {description}")
-        screen.refresh()
-
-    # Função para lidar com a seleção de opções
-    def handleSubInput(key):
-        nonlocal currentOption
-        if key == curses.KEY_UP:
-            currentOption = (currentOption - 1) % len(options)
-        elif key == curses.KEY_DOWN:
-            currentOption = (currentOption + 1) % len(options)
-        elif key in [curses.KEY_ENTER, 10, 13]:
-            return options[currentOption][0]
-        return None
-
-    # Variável para armazenar a opção selecionada
     selectedOption = None
 
-    # Função principal para controlar o menu com a respetiva lógica
     def subMenuLogic(screen):
-        nonlocal selectedOption
+        nonlocal selectedOption, currentOption
         while selectedOption is None:
-            displaySubMenu(screen)
+            displayMenu(screen, options, currentOption, "PUBLIC KEYS MANAGEMENT")
             key = screen.getch()
-            selectedOption = handleSubInput(key)
+            selectedOption, currentOption = handleInput(key, currentOption, options)
     curses.wrapper(subMenuLogic)
     return selectedOption
 

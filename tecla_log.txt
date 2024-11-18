@@ -1,0 +1,12 @@
+Tecla: w | Código: 119
+Tecla: w | Código: 119
+Tecla: e | Código: 101
+Tecla: 3 | Código: 51
+Tecla: 5 | Código: 53
+Tecla: 6 | Código: 54
+Tecla: u | Código: 117
+Tecla:   | Código: 32
+Tecla: ^H | Código: 8
+Tecla: ^J | Código: 10
+Tecla: ^J | Código: 10
+Tecla: ^J | Código: 10
