@@ -2,6 +2,7 @@ import os
 import sys
 import subprocess
 from logo import logoPrint
+from logo import version
 
 # Verificação das dependências
 os.system('cls' if os.name == 'nt' else 'clear')
@@ -15,14 +16,14 @@ def installPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 def uninstallPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", package])
-
+"""
 requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
     except ImportError:
         installPackage(package)
-
+"""
 from datetime import datetime
 import shutil
 import qrcode
@@ -117,7 +118,7 @@ def mainLogo(screen):
             "     d88P888 888    888           / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / ",
             "    d88P 888 888   d88P          / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  ",
             "   d88P  888 8888888P\"           \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_|   ",
-            "  d88P   888 888 T88b                  /_/                                   v4.0.2",
+            f"  d88P   888 888 T88b                  /_/                                   {version}",
             " d8888888888 888  T88b  ",
             "d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity"
         ]
@@ -157,10 +158,14 @@ def displayMenu(screen, options, currentOption, title):
     # Mostrar as opções do menu
     menuStartY = 11
     for idx, (option, description) in enumerate(options):
+        # Adicionar um espaço extra antes da última opção (Exit)
+        displayIdx = menuStartY + idx if idx < len(options) - 1 else menuStartY + idx + 1
+
+        # Realçar a opção atual
         if idx == currentOption:
-            screen.addstr(menuStartY + idx, 5, f"› {description}", curses.A_REVERSE)
+            screen.addstr(displayIdx, 5, f"› {description}", curses.A_REVERSE)
         else:
-            screen.addstr(menuStartY + idx, 5, f"  {description}")
+            screen.addstr(displayIdx, 5, f"  {description}")
 
     # Atualizar o ecrã
     screen.refresh()
@@ -171,16 +176,18 @@ def handleInput(key, currentOption, options):
         currentOption = (currentOption + 1) % len(options)
     elif key in [curses.KEY_ENTER, 10, 13]:
         return options[currentOption][0], currentOption
+    elif key == 27:
+        return '0', currentOption
     return None, currentOption
-def menuControl():
+# Lista de menus da aplicação
+def mainMenuControl():
     options = [
         ("1", "Symmetric cryptography"),
         ("2", "Asymmetric cryptography (RSA)"),
         ("3", "Decrypt symmetric encryption"),
         ("4", "Decrypt asymmetric encryption"),
-        ("5", "Generate encryption keys"),
-        ("6", "Public keys management"),
-        ("9", "Fix dependencies"),
+        ("5", "Public keys management"),
+        ("9", "Settings"),
         ("0", "Exit")
     ]
     currentOption = 0
@@ -194,7 +201,7 @@ def menuControl():
             selectedOption, currentOption = handleInput(key, currentOption, options)
     curses.wrapper(menuLogic)
     return selectedOption
-def subMenuControl():
+def publicKeysMenuControl():
     options = [
         ("1", "Add new"),
         ("2", "Delete"),
@@ -214,11 +221,29 @@ def subMenuControl():
             selectedOption, currentOption = handleInput(key, currentOption, options)
     curses.wrapper(subMenuLogic)
     return selectedOption
+def settingsMenuControl():
+    options = [
+        ("1", "Generate encryption keys"),
+        ("2", "Fix dependencies"),
+        ("3", "Application mode"),
+        ("0", "Back")
+    ]
+    currentOption = 0
+    selectedOption = None
+
+    def subMenuLogic(screen):
+        nonlocal selectedOption, currentOption
+        while selectedOption is None:
+            displayMenu(screen, options, currentOption, "SETTINGS")
+            key = screen.getch()
+            selectedOption, currentOption = handleInput(key, currentOption, options)
+    curses.wrapper(subMenuLogic)
+    return selectedOption
 
 def main():
     while True:
         # Menu principal
-        option = menuControl()
+        option = mainMenuControl()
 
         if option == '1':
             logoPrint()
@@ -497,19 +522,9 @@ def main():
             
             clearScreen()
         elif option == '5':
-            logoPrint()
-            
-            # Geração de um novo par de chaves RSA
-            print("Generating RSA key pair...")
-            keyGenerator.generateRsaKeys()
-            print("--------------------------------------")
-            print(f"RSA key pair generated successfully. Press ENTER to continue...")
-
-            clearScreen()
-        elif option == '6':
             while True:
                 # Menu de gestão de chaves públicas
-                subOption = subMenuControl()
+                subOption = publicKeysMenuControl()
 
                 if subOption == '1':
                     logoPrint()
@@ -624,28 +639,52 @@ def main():
                 elif subOption == '0':
                     break
         elif option == '9':
-            logoPrint()
-            
-            # Verificar conexão à internet
-            print("Checking internet connection...")
-            try:
-                import urllib.request
-                urllib.request.urlopen('http://google.com', timeout=5)
-                print("Internet connection: OK")
-            except urllib.error.URLError:
-                print("No internet connection. Please check your connection and try again. Press ENTER to continue...")
-                clearScreen()
-                continue
+            while True:
+                # Menu de configurações
+                subOption = settingsMenuControl()
 
-            # Reparação das dependências
-            print("Repairing dependencies...")
-            repairDependencies()
-            logoPrint()
+                if subOption == '1':
+                    logoPrint()
+                    
+                    # Geração de um novo par de chaves RSA
+                    print("Generating RSA key pair...")
+                    keyGenerator.generateRsaKeys()
+                    print("--------------------------------------")
+                    print(f"RSA key pair generated successfully. Press ENTER to continue...")
 
-            # Mensagem de sucesso
-            print("Dependencies repaired successfully. Press ENTER to continue...")
-            
-            clearScreen()
+                    clearScreen()
+                elif subOption == '2':
+                    logoPrint()
+                    
+                    # Verificar conexão à internet
+                    print("Checking internet connection...")
+                    try:
+                        import urllib.request
+                        urllib.request.urlopen('http://google.com', timeout=5)
+                        print("Internet connection: OK")
+                    except urllib.error.URLError:
+                        print("No internet connection. Please check your connection and try again. Press ENTER to continue...")
+                        clearScreen()
+                        continue
+
+                    # Reparação das dependências
+                    print("Repairing dependencies...")
+                    repairDependencies()
+                    logoPrint()
+
+                    # Mensagem de sucesso
+                    print("Dependencies repaired successfully. Press ENTER to continue...")
+                    
+                    clearScreen()
+                elif subOption == '3':
+                    logoPrint()
+                    
+                    # Placeholder para a funcionalidade de modo de aplicação
+                    print("Application mode functionality is not implemented yet. Press ENTER to continue...")
+                    
+                    clearScreen()
+                elif subOption == '0':
+                    break
         elif option == '0':
             os.system('cls' if os.name == 'nt' else 'clear')
             break
