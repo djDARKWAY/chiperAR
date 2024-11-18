@@ -5,15 +5,22 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
+from tqdm import tqdm
 
 # Função para desencriptar dados com AES-256
 def decryptAes256(encryptedData, key):
     nonce = encryptedData[:16]
     tag = encryptedData[16:32]
     ciphertext = encryptedData[32:]
-    cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
-    data = cipher.decrypt_and_verify(ciphertext, tag)
-    return data
+    cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)    
+    chunkSize = 10 * 1024 * 1024  # 10 MB
+    decryptedData = b''
+    for i in tqdm(range(0, len(ciphertext), chunkSize), unit='MB', desc='Decrypting with AES-256'):
+        chunk = ciphertext[i:i + chunkSize]
+        decryptedData += cipher.decrypt(chunk)
+    
+    cipher.verify(tag)
+    return decryptedData
 
 # Função para desencriptar dados com RSA-2048
 def decryptRsa2048(encryptedData, privateKeyPath):
@@ -82,7 +89,7 @@ def main(encryptedFilePath, encryptedKeyPath, privateKeyPath, publicKeys, signat
     print("Decrypting AES key with private key...")
     aesKey = decryptRsa2048(encryptedAesKey, privateKeyPath)
 
-    print("Decrypting data with AES...")
+    # Desencriptar dados com a chave AES
     decryptedData = decryptAes256(encryptedDataAes, aesKey)
 
     # Criar uma nova pasta para o ficheiro decifrado no desktop com o nome do ficheiro

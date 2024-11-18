@@ -44,7 +44,7 @@ def encryptFile(inputFile, outputFile, key, algorithmName):
 
     # Encriptar os dados com barra de progresso
     encryptor = cipher.encryptor()
-    chunkSize = 1024 * 1024  # 1 MB
+    chunkSize = 10 * 1024 * 1024  # 10 MB
     ciphertext = b''
     for i in tqdm(range(0, len(paddedData), chunkSize), unit='MB', desc='Encrypting'):
         chunk = paddedData[i:i + chunkSize]

@@ -6,12 +6,18 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 from Crypto.Random import get_random_bytes
+from tqdm import tqdm
 
 # Função para encriptar dados com AES-256
 def encryptAes256(data, key):
     cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
-    ciphertext, tag = cipher.encrypt_and_digest(data)
+    chunkSize = 10 * 1024 * 1024  # 10 MB
+    ciphertext = b''
+    for i in tqdm(range(0, len(data), chunkSize), unit='MB', desc='Encrypting with AES-256'):
+        chunk = data[i:i + chunkSize]
+        ciphertext += cipher.encrypt(chunk)
+    tag = cipher.digest()
     return nonce + tag + ciphertext
 
 # Função para encriptar dados com RSA-2048
@@ -56,7 +62,6 @@ def main(filePath, publicKeyPath, privateKeyPath):
     aesKey = get_random_bytes(32)
 
     # Encriptar dados do ficheiro com AES-256
-    print("Encrypting file data with AES-256...")
     encryptedDataAes = encryptAes256(data, aesKey)
 
     # Assinar os dados originais antes da encriptação
