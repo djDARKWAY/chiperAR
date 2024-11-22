@@ -16,15 +16,16 @@ def installPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
 def uninstallPackage(package):
     subprocess.check_call([sys.executable, "-m", "pip", "uninstall", "-y", package])
-"""
+
 requiredPackages = readRequirements()
 for package in requiredPackages:
     try:
         __import__(package)
     except ImportError:
         installPackage(package)
-"""
+
 from datetime import datetime
+import requests
 import shutil
 import qrcode
 import zipfile
@@ -36,6 +37,7 @@ import encryptSy
 import decryptSy
 import encryptAsy
 import decryptAsy
+
 
 # Funções auxiliares
 def repairDependencies():
@@ -118,7 +120,7 @@ def mainLogo(screen):
             "     d88P888 888    888           / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / ",
             "    d88P 888 888   d88P          / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  ",
             "   d88P  888 8888888P\"           \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_|   ",
-            f"  d88P   888 888 T88b                  /_/                                   {version}",
+            f"  d88P   888 888 T88b                  /_/                                   v{version}",
             " d8888888888 888  T88b  ",
             "d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity"
         ]
@@ -139,6 +141,21 @@ def isInvalidFileName(fileName):
     if any(ord(char) < 32 or ord(char) > 126 for char in fileName):
         return True
     return False
+def checkUpdates(currentVersion):
+    os.system('cls' if os.name == 'nt' else 'clear')
+    logoPrint()
+    print("Checking for updates...")
+    print("--------------------------------------")
+    try:
+        response = requests.get("https://raw.githubusercontent.com/djDARKWAY/cipherAR/refs/heads/main/version.txt")
+        latestVersion = response.text.strip()
+        if currentVersion != latestVersion:
+            print(f"\033[93mUpdate available: {latestVersion}. Please update your application.\033[0m")
+            clearScreen()
+        else:
+            print("You are using the latest version.")
+    except requests.RequestException as e:
+        print(f"Error checking for updates: {e}")
 # Funções de menu
 def displayMenu(screen, options, currentOption, title):
     # Limpar o ecrã e esconder o cursor
@@ -240,11 +257,15 @@ def settingsMenuControl():
     curses.wrapper(subMenuLogic)
     return selectedOption
 
+os.system('cls' if os.name == 'nt' else 'clear')
+checkUpdates(version)
+
 def main():
     while True:
         # Menu principal
         option = mainMenuControl()
 
+        # Cifrar um ficheiro com criptografia simétrica (AES, TripleDES, ChaCha20)
         if option == '1':
             logoPrint()
 
@@ -312,6 +333,7 @@ def main():
             print("Encryption with AES successfully and saved in Desktop! Press ENTER to continue...")
 
             clearScreen()
+        # Cifrar um ficheiro com criptografia assimétrica (RSA)
         elif option == '2':
             logoPrint()
 
@@ -354,6 +376,7 @@ def main():
             print("Encryption with RSA successfully and saved in Desktop! Press ENTER to continue...")
 
             clearScreen()
+        # Decifrar um ficheiro com criptografia simétrica (AES, TripleDES, ChaCha20)
         elif option == '3':
             logoPrint()
 
@@ -436,6 +459,7 @@ def main():
             print("Decryption successful and saved in Desktop! Press ENTER to continue...")
 
             clearScreen()
+        # Decifrar um ficheiro com criptografia assimétrica (RSA)
         elif option == '4':
             logoPrint()
 
@@ -521,11 +545,13 @@ def main():
                 print(f"An error occurred during decryption: {e}. Press ENTER to continue...")
             
             clearScreen()
+        # Menu de gestão de chaves públicas
         elif option == '5':
             while True:
                 # Menu de gestão de chaves públicas
                 subOption = publicKeysMenuControl()
 
+                # Adicionar uma nova chave pública
                 if subOption == '1':
                     logoPrint()
 
@@ -549,6 +575,7 @@ def main():
                     print(f"Public key '{os.path.basename(publicKey)}' added successfully.")
 
                     clearScreen()
+                # Eliminar uma chave pública
                 elif subOption == '2':
                     logoPrint()
 
@@ -578,6 +605,7 @@ def main():
                     print(f"Public key '{publicKeys[choice]}' deleted successfully.")
 
                     clearScreen()
+                # Listar todas as chaves públicas
                 elif subOption == '3':
                     logoPrint()
 
@@ -593,6 +621,7 @@ def main():
                         print(f"{idx + 1}. {key}")
 
                     clearScreen()
+                # Importar um ficheiro ZIP com chaves públicas
                 elif subOption == '4':
                     logoPrint()
 
@@ -616,6 +645,7 @@ def main():
                         print(f"An error occurred while importing the ZIP file: {e}.")
 
                     clearScreen()
+                # Exportar todas as chaves públicas para um ficheiro ZIP
                 elif subOption == '5':
                     logoPrint()
 
@@ -636,13 +666,16 @@ def main():
                     print(f"All public keys have been exported to your desktop successfully. Press ENTER to continue...")
 
                     clearScreen()
+                # Voltar ao menu principal
                 elif subOption == '0':
                     break
+        # Menu de configurações
         elif option == '9':
             while True:
                 # Menu de configurações
                 subOption = settingsMenuControl()
 
+                # Gerar um novo par de chaves RSA
                 if subOption == '1':
                     logoPrint()
                     
@@ -653,6 +686,7 @@ def main():
                     print(f"RSA key pair generated successfully. Press ENTER to continue...")
 
                     clearScreen()
+                # Reparação das dependências
                 elif subOption == '2':
                     logoPrint()
                     
@@ -676,15 +710,21 @@ def main():
                     print("Dependencies repaired successfully. Press ENTER to continue...")
                     
                     clearScreen()
+                # Verificar a versão da aplicação
                 elif subOption == '3':
                     logoPrint()
                     
-                    # Placeholder para a funcionalidade de modo de aplicação
-                    print("Application mode functionality is not implemented yet. Press ENTER to continue...")
-                    
-                    clearScreen()
+                    # Verificar a versão da aplicação
+                    checkUpdates(version)
+
+                    # Mensagem de sucesso
+                    if version == requests.get("https://raw.githubusercontent.com/djDARKWAY/cipherAR/refs/heads/main/version.txt").text.strip():
+                        clearScreen()
+                        continue
+                # Voltar ao menu principal
                 elif subOption == '0':
                     break
+        # Sair da aplicação
         elif option == '0':
             os.system('cls' if os.name == 'nt' else 'clear')
             break

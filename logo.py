@@ -1,5 +1,5 @@
 import os
-version = "v4.0.6"
+version = "4.1.0"
 
 def logoPrint():
     # Limpeza do ecrâ e impressão do logótipo
@@ -10,7 +10,7 @@ def logoPrint():
        d88P888 888    888 	    / /   / / __ \\/ __ \\/ _ \\/ ___/ /| | / /_/ / 
       d88P 888 888   d88P 	   / /___/ / /_/ / / / /  __/ /  / ___ |/ _, _/  
      d88P  888 8888888P"  	   \\____/_/ .___/_/ /_/\\___/_/  /_/  |_/_/ |_| 
-    d88P   888 888 T88b   	         /_/                                   {version}
+    d88P   888 888 T88b   	         /_/                                   v{version}
    d8888888888 888  T88b  
   d88P     888 888   T88b     CipherAR: Application for Confidentiality and Integrity\033[0m
     """)
