@@ -12,7 +12,7 @@ from tqdm import tqdm
 def encryptAes256(data, key):
     cipher = AES.new(key, AES.MODE_EAX)
     nonce = cipher.nonce
-    chunkSize = 10 * 1024 * 1024  # 10 MB
+    chunkSize = 20 * 1024 * 1024  # 20 MB
     ciphertext = b''
     for i in tqdm(range(0, len(data), chunkSize), unit='MB', desc='Encrypting with AES-256'):
         chunk = data[i:i + chunkSize]

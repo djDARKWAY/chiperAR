@@ -13,7 +13,7 @@ def decryptAes256(encryptedData, key):
     tag = encryptedData[16:32]
     ciphertext = encryptedData[32:]
     cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)    
-    chunkSize = 10 * 1024 * 1024  # 10 MB
+    chunkSize = 20 * 1024 * 1024  # 20 MB
     decryptedData = b''
     for i in tqdm(range(0, len(ciphertext), chunkSize), unit='MB', desc='Decrypting with AES-256'):
         chunk = ciphertext[i:i + chunkSize]

@@ -44,7 +44,7 @@ def decryptFile(inputFile, outputFile, key):
 
     # Desencripta os dados com barra de progresso
     decryptor = cipher.decryptor()
-    chunkSize = 10 * 1024 * 1024  # 10 MB
+    chunkSize = 20 * 1024 * 1024  # 20 MB
     decryptedPadded = b""
     for i in tqdm(range(0, len(ciphertext), chunkSize), unit='MB', desc='Decrypting'):
         chunk = ciphertext[i:i + chunkSize]

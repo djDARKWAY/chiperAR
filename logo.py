@@ -1,5 +1,5 @@
 import os
-version = "4.1.0"
+version = "4.1.1"
 
 def logoPrint():
     # Limpeza do ecrâ e impressão do logótipo

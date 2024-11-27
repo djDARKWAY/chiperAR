@@ -38,7 +38,6 @@ import decryptSy
 import encryptAsy
 import decryptAsy
 
-
 # Funções auxiliares
 def repairDependencies():
     requiredPackages = readRequirements()
@@ -156,6 +155,15 @@ def checkUpdates(currentVersion):
             print("You are using the latest version.")
     except requests.RequestException as e:
         print(f"Error checking for updates: {e}")
+def checkInternetConnection():
+    print("Checking internet connection...")
+    try:
+        import urllib.request
+        urllib.request.urlopen('http://google.com', timeout=5)
+        print("Internet connection: OK")
+    except urllib.error.URLError:
+        print("No internet connection. Please check your connection and try again. Press ENTER to continue...")
+        clearScreen()
 # Funções de menu
 def displayMenu(screen, options, currentOption, title):
     # Limpar o ecrã e esconder o cursor
@@ -242,7 +250,7 @@ def settingsMenuControl():
     options = [
         ("1", "Generate encryption keys"),
         ("2", "Fix dependencies"),
-        ("3", "Application mode"),
+        ("3", "Check for updates"),
         ("0", "Back")
     ]
     currentOption = 0
@@ -691,15 +699,7 @@ def main():
                     logoPrint()
                     
                     # Verificar conexão à internet
-                    print("Checking internet connection...")
-                    try:
-                        import urllib.request
-                        urllib.request.urlopen('http://google.com', timeout=5)
-                        print("Internet connection: OK")
-                    except urllib.error.URLError:
-                        print("No internet connection. Please check your connection and try again. Press ENTER to continue...")
-                        clearScreen()
-                        continue
+                    checkInternetConnection()
 
                     # Reparação das dependências
                     print("Repairing dependencies...")
@@ -713,11 +713,9 @@ def main():
                 # Verificar a versão da aplicação
                 elif subOption == '3':
                     logoPrint()
-                    
+
                     # Verificar a versão da aplicação
                     checkUpdates(version)
-
-                    # Mensagem de sucesso
                     if version == requests.get("https://raw.githubusercontent.com/djDARKWAY/cipherAR/refs/heads/main/version.txt").text.strip():
                         clearScreen()
                         continue
