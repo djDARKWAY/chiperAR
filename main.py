@@ -161,9 +161,11 @@ def checkInternetConnection():
         import urllib.request
         urllib.request.urlopen('http://google.com', timeout=5)
         print("Internet connection: OK")
+        return True
     except urllib.error.URLError:
         print("No internet connection. Please check your connection and try again. Press ENTER to continue...")
         clearScreen()
+        return False
 # Funções de menu
 def displayMenu(screen, options, currentOption, title):
     # Limpar o ecrã e esconder o cursor
@@ -699,7 +701,8 @@ def main():
                     logoPrint()
                     
                     # Verificar conexão à internet
-                    checkInternetConnection()
+                    if not checkInternetConnection():
+                        continue
 
                     # Reparação das dependências
                     print("Repairing dependencies...")
@@ -713,6 +716,11 @@ def main():
                 # Verificar a versão da aplicação
                 elif subOption == '3':
                     logoPrint()
+
+                    # Verificar conexão à internet
+                    if not checkInternetConnection():
+
+                        continue
 
                     # Verificar a versão da aplicação
                     checkUpdates(version)
